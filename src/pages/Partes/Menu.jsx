@@ -10,22 +10,24 @@ export default function Menu() {
                     <span className="site-name">Tienda Online</span>
                 </div>
 
-                                <nav className="main-nav">
-                                    <Link to="/">Home</Link>
-                                    <Link to="/productos">Productos</Link>
-                                    <Link to="/blogs">Blogs</Link>
-                                    <Link to="/contacto">Contacto</Link>
-                                </nav>
+                <div className="nav-main" role="navigation" aria-label="Main navigation">
+                    <nav className="main-nav nav-center">
+                        <Link to="/">Home</Link>
+                        <Link to="/productos">Productos</Link>
+                        <Link to="/blogs">Blogs</Link>
+                        <Link to="/contacto">Contacto</Link>
+                    </nav>
 
-                <div className="cart">
-                    <a href="/carrito.html" className="cart-link">
-                        <span className="cart-icon">🛍️</span>
-                        <span className="cart-count">0</span>
-                    </a>
+                    <div className="nav-actions">
+                        <Link to="/carrito" className="cart-link" title="Ver carrito" aria-label="Ver carrito">
+                            <span className="cart-icon" aria-hidden="true">🛍️</span>
+                            <span className="cart-count" aria-live="polite">0</span>
+                        </Link>
 
-                    <a href="/login.html" className="login-link" title="Iniciar sesión">
-                        <span className="login-icon">👤</span>
-                    </a>
+                        <Link to="/login" className="login-link" title="Iniciar sesión">
+                            <span className="login-icon" aria-hidden="true">👤</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
         </header>
