@@ -1,8 +1,68 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Menu from './Partes/Menu'
+import { Footer } from './Partes/Footer'
+import { fetchProducts } from '../Api/xano'
 
 export default function Home() {
+  const [featuredProducts, setFeaturedProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Cargar productos destacados desde Xano
+  useEffect(() => {
+    const loadFeaturedProducts = async () => {
+      try {
+        setLoading(true)
+        console.log('🔄 Cargando productos destacados...')
+        const productsData = await fetchProducts()
+        console.log('✅ Productos cargados para home:', productsData)
+        
+        // Tomar los primeros 4 productos como destacados
+        // Puedes ajustar esta lógica para productos realmente destacados
+        if (Array.isArray(productsData)) {
+          const featured = productsData.slice(0, 4) // Primeros 4 productos
+          setFeaturedProducts(featured)
+        } else {
+          setFeaturedProducts([])
+        }
+      } catch (err) {
+        console.error('❌ Error cargando productos destacados:', err)
+        setError('Error al cargar productos destacados')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadFeaturedProducts()
+  }, [])
+
+  // Función para obtener la URL de la imagen
+  const getImageUrl = (product) => {
+    if (product.images && product.images[0]) {
+      return product.images[0].url || product.images[0]
+    }
+    if (product.image) return product.image
+    if (product.img) return product.img
+    return 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'
+  }
+
+  // Función para obtener el nombre
+  const getName = (product) => {
+    return product.name || product.title || 'Producto sin nombre'
+  }
+
+  // Función para formatear precio
+  const formatPrice = (price) => {
+    if (typeof price === 'number') {
+      return `$${price.toLocaleString('es-CL')}`
+    }
+    if (typeof price === 'string') {
+      return price.includes('$') ? price : `$${price}`
+    }
+    return '$0'
+  }
+
   return (
     <>
       <Menu />
@@ -38,65 +98,65 @@ export default function Home() {
             <p>Los productos más populares y mejor valorados por nuestros clientes</p>
           </div>
           
-          <div className="products-grid">
-            <div className="product-card">
-              <img 
-                src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop" 
-                alt="Auriculares premium" 
-                className="img-producto" 
-              />
-              <div className="product-info">
-                <h3 className="product-title">Auriculares Premium</h3>
-                <p className="product-price">$19.990</p>
-                <button className="add-to-cart">Añadir al carrito</button>
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Cargando...</span>
+              </div>
+              <p className="mt-3">Cargando productos destacados...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-5">
+              <div className="alert alert-warning">
+                <p>{error}</p>
               </div>
             </div>
-
-            <div className="product-card">
-              <img 
-                src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop" 
-                alt="Reloj inteligente" 
-                className="img-producto" 
-              />
-              <div className="product-info">
-                <h3 className="product-title">Reloj Inteligente</h3>
-                <p className="product-price">$24.990</p>
-                <button className="add-to-cart">Añadir al carrito</button>
-              </div>
+          ) : featuredProducts.length === 0 ? (
+            <div className="text-center py-5">
+              <p>No hay productos destacados disponibles en este momento.</p>
+              <Link to="/productos" className="btn-primary mt-3">
+                Ver Todos los Productos
+              </Link>
             </div>
-
-            <div className="product-card">
-              <img 
-                src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop" 
-                alt="Zapatillas deportivas" 
-                className="img-producto" 
-              />
-              <div className="product-info">
-                <h3 className="product-title">Zapatillas Deportivas</h3>
-                <p className="product-price">$15.000</p>
-                <button className="add-to-cart">Añadir al carrito</button>
+          ) : (
+            <>
+              <div className="products-grid">
+                {featuredProducts.map(product => (
+                  <div key={product.id} className="product-card">
+                    <img 
+                      src={getImageUrl(product)} 
+                      alt={getName(product)} 
+                      className="img-producto" 
+                      onError={(e) => {
+                        e.target.src = 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'
+                      }}
+                    />
+                    <div className="product-info">
+                      <h3 className="product-title">{getName(product)}</h3>
+                      <p className="product-price">{formatPrice(product.price)}</p>
+                      <Link 
+                        to={`/productos/${product.id}`} 
+                        className="add-to-cart"
+                        style={{
+                          display: 'block',
+                          textDecoration: 'none',
+                          textAlign: 'center'
+                        }}
+                      >
+                        Ver Detalles
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            <div className="product-card">
-              <img 
-                src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop" 
-                alt="Cámara digital" 
-                className="img-producto" 
-              />
-              <div className="product-info">
-                <h3 className="product-title">Cámara Digital</h3>
-                <p className="product-price">$29.990</p>
-                <button className="add-to-cart">Añadir al carrito</button>
+              
+              <div className="text-center mt-5">
+                <Link to="/productos" className="btn-secondary">
+                  Ver Todos los Productos
+                </Link>
               </div>
-            </div>
-          </div>
-          
-          <div className="text-center mt-5">
-            <Link to="/productos" className="btn-secondary">
-              Ver Todos los Productos
-            </Link>
-          </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -139,6 +199,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <Footer />
     </>
   )
 }

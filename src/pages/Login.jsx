@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import Menu from './Partes/Menu'
 import { useNavigate } from 'react-router-dom'
 import { login as xanoLogin, signup as xanoSignup } from '../Api/xano'
+import { Footer } from './Partes/Footer'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -175,6 +176,7 @@ export default function Login() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   )
 }

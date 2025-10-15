@@ -1,5 +1,6 @@
 import React from 'react'
 import Menu from './Partes/Menu'
+import { Footer } from './Partes/Footer'
 
 export default function Blogs() {
   return (
@@ -53,6 +54,7 @@ export default function Blogs() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   )
 }

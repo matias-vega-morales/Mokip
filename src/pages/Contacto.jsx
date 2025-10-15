@@ -1,5 +1,6 @@
 import React from 'react'
 import Menu from './Partes/Menu'
+import { Footer } from './Partes/Footer'
 
 export default function Contacto() {
   return (
@@ -31,6 +32,7 @@ export default function Contacto() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   )
 }

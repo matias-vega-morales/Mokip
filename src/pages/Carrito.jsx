@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Menu from './Partes/Menu'
 import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart } from '../Api/xano'
 import { Link, useNavigate } from 'react-router-dom'
+import { Footer } from './Partes/Footer'
 
 export default function Carrito() {
   const [cart, setCart] = useState(null)
@@ -177,6 +178,7 @@ export default function Carrito() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   )
 }

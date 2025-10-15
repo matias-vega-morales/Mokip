@@ -63,7 +63,7 @@ export default function ProductoDetalle() {
             <div className="detalle-galeria">
               <div className="card" style={{ overflow: 'hidden' }}>
                 <img 
-                  src={producto.images?.[0] || producto.img || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=600&fit=crop'} 
+                  src={producto.images?.[0] || producto.img || 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'} 
                   alt={producto.name || producto.title} 
                   className="detalle-img-principal img-producto"
                   style={{ width: '100%', height: '400px', objectFit: 'cover' }}
@@ -197,7 +197,7 @@ export default function ProductoDetalle() {
               {relacionados.map(r => (
                 <Link to={`/productos/${r.id}`} key={r.id} className="relacionado-card product-card">
                   <img 
-                    src={r.images?.[0] || r.img || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop'} 
+                    src={r.images?.[0] || r.img || 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'} 
                     alt={r.name || r.title} 
                     className="img-producto"
                     style={{ width: '100%', height: '150px', objectFit: 'cover' }}
