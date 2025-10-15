@@ -16,6 +16,14 @@ export default function Login() {
     setMessage('')
     try {
       const res = await xanoLogin({ email, password })
+
+      console.log('🔍 Respuesta COMPLETA del login:', res)
+      console.log('🔍 Datos del usuario recibidos:', res.user)
+      if (res && res.user) {
+        console.log('🔍 Campos disponibles en user:', Object.keys(res.user))
+        console.log('🆔 ID del usuario:', res.user.id)
+      }
+      
       if (res && res.user) {
         localStorage.setItem('auth_user', JSON.stringify(res.user))
         // Verificar si es admin (por email por ahora, hasta que Xano devuelva el campo role)

@@ -1,10 +1,11 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import AdminMenu from './Partes/AdminMenu'
-import { useNavigate } from 'react-router-dom'
-import { createProduct } from '../Api/xano'
+import { useNavigate, useParams } from 'react-router-dom'
+import { fetchProductById, updateProduct } from '../Api/xano'
 
-export default function AdminCrearProducto() {
+function AdminEditarProducto() {
   const navigate = useNavigate()
+  const { id } = useParams()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -12,11 +13,49 @@ export default function AdminCrearProducto() {
     stock: '',
     brand: '',
     category: '',
-    image: null // Cambiado a image singular
+    image: null
   })
+  const [currentProduct, setCurrentProduct] = useState(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState(null)
+
+  // Cargar datos del producto
+  useEffect(() => {
+    async function loadProduct() {
+      if (!id) return
+      
+      try {
+        setLoading(true)
+        const product = await fetchProductById(id)
+        setCurrentProduct(product)
+        
+        // Llenar el formulario con los datos actuales
+        setFormData({
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || '',
+          stock: product.stock || '',
+          brand: product.brand || '',
+          category: product.category || '',
+          image: null
+        })
+        
+        // Si ya tiene imagen, mostrar preview
+        if (product.images && product.images.length > 0) {
+          setImagePreview(product.images[0])
+        }
+        
+      } catch (err) {
+        console.error('Error cargando producto:', err)
+        setMessage('❌ Error al cargar el producto')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    loadProduct()
+  }, [id])
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -27,56 +66,38 @@ export default function AdminCrearProducto() {
   }
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0] // Tomar solo el primer archivo
+    const file = e.target.files[0]
     
     if (file) {
-      console.log('📸 Archivo seleccionado:', file.name, file.size, file.type)
+      console.log('📸 Nueva imagen seleccionada:', file.name)
       
-      // Crear preview de la imagen
+      // Verificar tamaño (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage('❌ La imagen es demasiado grande. Máximo 5MB.')
+        return
+      }
+      
       const preview = URL.createObjectURL(file)
       setImagePreview(preview)
-      
-      setFormData(prev => ({
-        ...prev,
-        image: file // Guardar el archivo
-      }))
-    } else {
-      console.log('❌ No se seleccionó archivo')
+      setFormData(prev => ({ ...prev, image: file }))
     }
   }
 
   const removeImage = () => {
-    // Revocar URL de la preview
-    if (imagePreview) {
+    if (imagePreview && imagePreview.startsWith('blob:')) {
       URL.revokeObjectURL(imagePreview)
     }
-    
     setFormData(prev => ({ ...prev, image: null }))
     setImagePreview(null)
-    
-    // Resetear el input file
     const fileInput = document.getElementById('image')
-    if (fileInput) {
-      fileInput.value = ''
-    }
+    if (fileInput) fileInput.value = ''
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    // Validaciones
     if (!formData.name || !formData.price || !formData.stock) {
-      setMessage('❌ Por favor completa los campos requeridos (Nombre, Precio, Stock)')
-      return
-    }
-
-    if (parseFloat(formData.price) <= 0) {
-      setMessage('❌ El precio debe ser mayor a 0')
-      return
-    }
-
-    if (parseInt(formData.stock) < 0) {
-      setMessage('❌ El stock no puede ser negativo')
+      setMessage('❌ Por favor completa los campos requeridos')
       return
     }
 
@@ -84,41 +105,47 @@ export default function AdminCrearProducto() {
     setMessage('')
     
     try {
-      // Preparar datos para enviar
-      const productData = {
+      // Preparar datos para actualizar
+      const updates = {
         name: formData.name.trim(),
         description: formData.description.trim() || '',
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock),
         brand: formData.brand.trim() || '',
         category: formData.category || '',
-        images: formData.image ? [formData.image] : [] // Enviar como array
       }
 
-      console.log('📤 Enviando producto a Xano...', productData)
-      console.log('🖼️ Imagen a enviar:', formData.image)
+      console.log('🔄 Actualizando producto...', updates)
       
-      const result = await createProduct(productData)
-      console.log('✅ Respuesta de Xano:', result)
+      const result = await updateProduct(id, updates)
+      console.log('✅ Producto actualizado:', result)
       
-      setMessage('✅ Producto creado exitosamente! Redirigiendo...')
+      setMessage('✅ Producto actualizado exitosamente!')
       
-      // Limpiar preview
-      if (imagePreview) {
-        URL.revokeObjectURL(imagePreview)
-      }
-      
-      // Redirigir después de 2 segundos
+      // Redirigir después de 1 segundo
       setTimeout(() => {
         navigate('/admin/productos')
-      }, 2000)
+      }, 1000)
       
     } catch (err) {
-      console.error('❌ Error creando producto:', err)
-      setMessage('❌ Error al crear el producto: ' + (err.message || 'Verifica la consola para más detalles'))
+      console.error('❌ Error actualizando producto:', err)
+      setMessage('❌ Error al actualizar el producto: ' + err.message)
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loading && !currentProduct) {
+    return (
+      <>
+        <AdminMenu />
+        <div className="main-content" style={{ marginLeft: '280px', minHeight: '100vh' }}>
+          <div className="admin-header">
+            <h1>Cargando producto...</h1>
+          </div>
+        </div>
+      </>
+    )
   }
 
   return (
@@ -127,9 +154,9 @@ export default function AdminCrearProducto() {
       <div className="main-content" style={{ marginLeft: '280px', minHeight: '100vh' }}>
         <div className="admin-header">
           <div>
-            <h1>Crear Producto</h1>
+            <h1>Editar Producto</h1>
             <p style={{ color: 'var(--gray-600)', margin: '0.5rem 0 0 0' }}>
-              Agrega un nuevo producto al catálogo de la tienda
+              Modifica la información del producto
             </p>
           </div>
         </div>
@@ -139,7 +166,7 @@ export default function AdminCrearProducto() {
             <div className="card-header">
               <h3 style={{ margin: 0 }}>Información del Producto</h3>
               <small style={{ color: 'var(--gray-600)' }}>
-                Completa todos los campos requeridos (*)
+                ID: {id}
               </small>
             </div>
             
@@ -203,7 +230,7 @@ export default function AdminCrearProducto() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="stock">Stock Inicial *</label>
+                    <label htmlFor="stock">Stock *</label>
                     <input
                       type="number"
                       id="stock"
@@ -254,6 +281,27 @@ export default function AdminCrearProducto() {
 
                 <div className="form-group">
                   <label htmlFor="image">Imagen del Producto</label>
+                  
+                  {/* Mostrar imagen actual si existe */}
+                  {currentProduct?.images?.[0] && !imagePreview && (
+                    <div style={{ marginBottom: '1rem' }}>
+                      <p style={{ fontSize: '0.9rem', color: 'var(--gray-600)', marginBottom: '0.5rem' }}>
+                        Imagen actual:
+                      </p>
+                      <img 
+                        src={currentProduct.images[0]} 
+                        alt="Actual"
+                        style={{ 
+                          width: '200px', 
+                          height: '200px', 
+                          objectFit: 'cover',
+                          borderRadius: 'var(--border-radius-md)',
+                          border: '2px solid var(--gray-300)'
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   <input
                     type="file"
                     id="image"
@@ -269,25 +317,25 @@ export default function AdminCrearProducto() {
                     }}
                   />
                   <small style={{ color: 'var(--gray-500)', marginTop: '0.5rem', display: 'block' }}>
-                    Selecciona UNA imagen para el producto. Formatos: JPG, PNG, WebP
+                    Selecciona una nueva imagen para reemplazar la actual
                   </small>
                   
-                  {/* Preview de la imagen */}
-                  {imagePreview && (
+                  {/* Preview de nueva imagen */}
+                  {imagePreview && imagePreview.startsWith('blob:') && (
                     <div style={{ marginTop: '1rem' }}>
                       <p style={{ fontSize: '0.9rem', color: 'var(--gray-600)', marginBottom: '0.5rem' }}>
-                        Vista previa de la imagen:
+                        Nueva imagen (se subirá cuando Xano lo permita):
                       </p>
                       <div style={{ position: 'relative', display: 'inline-block' }}>
                         <img 
                           src={imagePreview} 
-                          alt="Preview"
+                          alt="Nueva preview"
                           style={{ 
                             width: '200px', 
                             height: '200px', 
                             objectFit: 'cover',
                             borderRadius: 'var(--border-radius-md)',
-                            border: '2px solid var(--gray-300)'
+                            border: '2px solid var(--success)'
                           }}
                         />
                         <button
@@ -341,7 +389,7 @@ export default function AdminCrearProducto() {
                     disabled={loading}
                     style={{ minWidth: '150px' }}
                   >
-                    {loading ? 'Creando Producto...' : 'Crear Producto'}
+                    {loading ? 'Actualizando...' : 'Actualizar Producto'}
                   </button>
                 </div>
 
@@ -370,3 +418,4 @@ export default function AdminCrearProducto() {
     </>
   )
 }
+export default AdminEditarProducto;

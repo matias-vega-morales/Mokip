@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Menu from './Partes/Menu'
-import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem } from '../Api/xano'
+import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart } from '../Api/xano'
 import { Link, useNavigate } from 'react-router-dom'
 
 export default function Carrito() {
@@ -13,7 +13,16 @@ export default function Carrito() {
   // Obtener el usuario actual del localStorage
   const getCurrentUser = () => {
     const authUser = localStorage.getItem('auth_user')
-    return authUser ? JSON.parse(authUser) : null
+    if (authUser) {
+      try {
+        const user = JSON.parse(authUser)
+        return user
+      } catch (err) {
+        console.error('❌ Error parseando auth_user:', err)
+        return null
+      }
+    }
+    return null
   }
 
   useEffect(() => {
@@ -25,6 +34,7 @@ export default function Carrito() {
         
         // Verificar si el usuario está logueado
         if (!currentUser) {
+          console.log('❌ No hay usuario logueado')
           navigate('/login')
           return
         }
@@ -35,33 +45,39 @@ export default function Carrito() {
           throw new Error('No se pudo obtener el ID del usuario')
         }
 
+        console.log('🛒 Buscando carrito para usuario:', userId)
+        
         // Obtener el carrito del usuario
         const carts = await fetchCartByUser(userId)
-        const userCart = carts && carts.length ? carts[0] : null
+        console.log('📦 Carritos encontrados:', carts)
         
+        let userCart = carts && carts.length ? carts[0] : null
+        
+        // Si no hay carrito, crear uno nuevo
         if (!userCart) {
-          // Si no hay carrito, mostrar carrito vacío
-          setItems([])
-          setCart(null)
-          return
+          console.log('🆕 Creando nuevo carrito...')
+          userCart = await createCart({
+            user_id: userId,
+            created_at: new Date().toISOString()
+          })
+          console.log('✅ Nuevo carrito creado:', userCart)
         }
 
         if (!mounted) return
         setCart(userCart)
 
         // Obtener los items del carrito
+        console.log('📋 Buscando items para carrito:', userCart.id)
         const list = await fetchCartItems(userCart.id)
+        console.log('🎁 Items encontrados:', list)
+        
         if (!mounted) return
         setItems(list)
 
       } catch (err) {
-        console.error('Error cargando carrito:', err)
+        console.error('❌ Error cargando carrito:', err)
         if (mounted) {
-          if (err.message.includes('404') || err.message.includes('No se pudo obtener')) {
-            setError('Carrito vacío')
-          } else {
-            setError(err.message || 'Error cargando carrito')
-          }
+          setError('Error cargando carrito: ' + err.message)
         }
       } finally {
         if (mounted) setLoading(false)
@@ -132,14 +148,14 @@ export default function Carrito() {
                         <h2>{item.product?.name || item.product?.title}</h2>
                         <p>{item.product?.description}</p>
                       </div>
-                      <div className="carrito-precio">${(item.price_at_purchase || item.product?.price || 0).toFixed(2)}</div>
+                      <div className="carrito-precio">${(item.price_at_purchase || it.product?.price || 0).toFixed(2)}</div>
                       <div className="carrito-cantidad">
                         <button className="btn-cantidad menos" onClick={() => handleQuantityChange(item.id, -1)}>-</button>
                         <input type="number" min="1" value={item.quantity || 1} readOnly className="input-cantidad" />
                         <button className="btn-cantidad mas" onClick={() => handleQuantityChange(item.id, +1)}>+</button>
                       </div>
                       <div className="carrito-subtotal">
-                        ${((item.price_at_purchase || item.product?.price || 0) * (item.quantity || 1)).toFixed(2)}
+                        ${((item.price_at_purchase || it.product?.price || 0) * (item.quantity || 1)).toFixed(2)}
                       </div>
                       <button className="btn-eliminar" onClick={() => handleRemove(item.id)}>Eliminar</button>
                     </div>

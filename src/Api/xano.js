@@ -42,10 +42,9 @@ export async function login({ email, password }) {
     });
     
     console.log('📊 Status:', response.status);
-    console.log('📋 OK:', response.ok);
     
     const responseText = await response.text();
-    console.log('📄 Response:', responseText);
+    console.log('📄 Response COMPLETA de Xano:', responseText); // ← ESTA LÍNEA NUEVA
     
     if (!response.ok) {
       console.error('❌ Error HTTP:', response.status);
@@ -53,19 +52,26 @@ export async function login({ email, password }) {
     }
     
     const data = JSON.parse(responseText);
-    console.log('✅ Login exitoso:', data);
+    console.log('✅ Login exitoso - Datos COMPLETOS:', data); // ← ESTA LÍNEA NUEVA
+    
+    // ↓↓ ESTAS 4 LÍNEAS NUEVAS PARA DEBUG ↓↓
+    console.log('🔑 Token recibido:', data.authToken ? 'SÍ' : 'NO');
+    console.log('👤 Datos del usuario:', data.user);
+    if (data.user) {
+      console.log('🔍 Campos del usuario:', Object.keys(data.user));
+    }
+    // ↑↑ FIN DE LÍNEAS NUEVAS ↑↑
     
     const { authToken } = data || {};
     if (!authToken) {
       throw new Error('No se recibió token de autenticación');
     }
 
-    console.log('🔑 Token recibido correctamente');
     setToken(authToken);
     
     return { 
       token: authToken, 
-      user: data.user || { email: email } 
+      user: data.user || { email: email }  // ← Asegúrate que es data.user
     };
     
   } catch (err) {
@@ -189,15 +195,112 @@ export async function fetchRelatedProducts(category, limit = 5) {
 }
 
 export async function createProduct(productData) {
-  const response = await fetch(`${BASE_URL}/product`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(productData)
-  });
-  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
-  return await response.json();
+  try {
+    console.log('📦 Enviando datos del producto:', productData);
+    
+    // Crear FormData para enviar archivos
+    const formData = new FormData();
+    
+    // Agregar campos de texto
+    formData.append('name', productData.name);
+    formData.append('description', productData.description || '');
+    formData.append('price', productData.price.toString());
+    formData.append('stock', productData.stock.toString());
+    formData.append('brand', productData.brand || '');
+    formData.append('category', productData.category || '');
+    
+    // Agregar SOLO LA PRIMERA imagen (Xano probablemente espera una sola)
+    if (productData.images && productData.images.length > 0) {
+      formData.append('images', productData.images[0]);
+      console.log(`🖼️ Enviando imagen:`, productData.images[0].name);
+    } else {
+      console.log('ℹ️ No se enviarán imágenes');
+    }
+    
+    const response = await fetch(`${BASE_URL}/product`, {
+      method: 'POST',
+      // NO incluir 'Content-Type' - se establece automáticamente con FormData
+      body: formData
+    });
+    
+    console.log('📊 Status de respuesta:', response.status);
+    console.log('📋 Response OK:', response.ok);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Error del servidor:', errorText);
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Producto creado exitosamente:', result);
+    return result;
+    
+  } catch (err) {
+    console.error('❌ Error creando producto:', err);
+    throw err;
+  }
+}
+
+// 🔹 ACTUALIZAR PRODUCTO
+export async function updateProduct(productId, updates) {
+  try {
+    console.log('🔄 Actualizando producto:', productId, updates);
+    
+    const response = await fetch(`${BASE_URL}/product/${productId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates)
+    });
+    
+    console.log('📊 Status de actualización:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Producto actualizado exitosamente:', result);
+    return result;
+    
+  } catch (err) {
+    console.error('❌ Error actualizando producto:', err);
+    throw err;
+  }
+}
+
+// 🔹 SUBIR IMAGEN A PRODUCTO EXISTENTE
+export async function uploadProductImage(productId, imageFile) {
+  try {
+    console.log('🖼️ Subiendo imagen para producto:', productId);
+    
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    
+    // NOTA: Necesitarás crear un endpoint específico en Xano para subir imágenes
+    // Por ahora, usaremos un approach diferente
+    const response = await fetch(`${BASE_URL}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error subiendo imagen: ${response.status}`);
+    }
+    
+    const imageData = await response.json();
+    console.log('✅ Imagen subida:', imageData);
+    
+    // Retornar la URL de la imagen para usarla en el producto
+    return imageData.url;
+    
+  } catch (err) {
+    console.error('❌ Error subiendo imagen:', err);
+    throw err;
+  }
 }
 
 // 🔹 CARRITO
@@ -280,4 +383,28 @@ export async function fetchShipping() {
   const response = await fetch(`${BASE_URL}/shipping`);
   if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
   return await response.json();
+}
+
+// 🔹 CREAR CARRITO - AGREGAR ESTA FUNCIÓN AL FINAL DEL ARCHIVO
+export async function createCart(cartData) {
+  try {
+    console.log('🛒 Creando nuevo carrito:', cartData);
+    const response = await fetch(`${BASE_URL}/cart`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cartData)
+    });
+    
+    if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+    
+    const newCart = await response.json();
+    console.log('✅ Carrito creado exitosamente:', newCart);
+    return newCart;
+    
+  } catch (err) {
+    console.error('❌ Error creando carrito:', err);
+    throw err;
+  }
 }

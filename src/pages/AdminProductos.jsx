@@ -163,6 +163,7 @@ export default function AdminProductos() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <Link to={`/admin/editar-producto/${producto.id}`}>
                           <button 
                             className="btn-secondary" 
                             style={{ 
@@ -172,6 +173,7 @@ export default function AdminProductos() {
                           >
                             Editar
                           </button>
+                          </Link>
                           <button 
                             className="btn-link" 
                             style={{ 
