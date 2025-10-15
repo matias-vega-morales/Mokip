@@ -51,56 +51,135 @@ export default function AdminUsuarios() {
   return (
     <>
       <AdminMenu />
-      <div className="main-content">
+      <div className="main-content" style={{ marginLeft: '280px', minHeight: '100vh' }}>
         <div className="admin-header">
-          <h1>Gestión de Usuarios</h1>
+          <div>
+            <h1>Gestión de Usuarios</h1>
+            <p style={{ color: 'var(--gray-600)', margin: '0.5rem 0 0 0' }}>
+              Administra los usuarios registrados en la plataforma
+            </p>
+          </div>
         </div>
         
         <main className="admin-content">
-          <div className="usuarios-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nombre</th>
-                  <th>Apellido</th>
-                  <th>Email</th>
-                  <th>Rol</th>
-                  <th>Estado</th>
-                  <th>Teléfono</th>
-                  <th>Dirección</th>
-                  <th>Fecha de Registro</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.map(usuario => (
-                  <tr key={usuario.id}>
-                    <td>{usuario.id}</td>
-                    <td>{usuario.name}</td>
-                    <td>{usuario.last_name}</td>
-                    <td>{usuario.email}</td>
-                    <td>
-                      <span className={`role-badge ${usuario.role}`}>
-                        {usuario.role || 'customer'}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${usuario.status}`}>
-                        {usuario.status || 'active'}
-                      </span>
-                    </td>
-                    <td>{usuario.phone || '-'}</td>
-                    <td>{usuario.shipping_address || '-'}</td>
-                    <td>{new Date(usuario.created_at).toLocaleDateString()}</td>
-                    <td>
-                      <button className="btn-edit">Editar</button>
-                      <button className="btn-delete">Eliminar</button>
-                    </td>
+          <div className="usuarios-table card">
+            <div className="card-header">
+              <h3 style={{ margin: 0 }}>Lista de Usuarios</h3>
+              <small style={{ color: 'var(--gray-600)' }}>
+                {usuarios.length} usuarios registrados
+              </small>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Avatar</th>
+                    <th>Nombre Completo</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Teléfono</th>
+                    <th>Dirección</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {usuarios.map(usuario => (
+                    <tr key={usuario.id}>
+                      <td>
+                        <div style={{ 
+                          width: '40px', 
+                          height: '40px', 
+                          borderRadius: '50%',
+                          backgroundColor: 'var(--primary-blue)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: 'white',
+                          fontWeight: '600',
+                          fontSize: '1.2rem'
+                        }}>
+                          {(usuario.name?.[0] || 'U').toUpperCase()}
+                        </div>
+                      </td>
+                      <td>
+                        <div>
+                          <strong style={{ color: 'var(--gray-900)' }}>
+                            {usuario.name} {usuario.last_name}
+                          </strong>
+                          <br />
+                          <small style={{ color: 'var(--gray-500)' }}>
+                            ID: {usuario.id?.slice(0, 8)}...
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                        <span style={{ color: 'var(--gray-700)' }}>
+                          {usuario.email}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`role-badge ${usuario.role || 'customer'}`}>
+                          {usuario.role || 'customer'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`status-badge ${usuario.status || 'active'}`}>
+                          {usuario.status || 'active'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ color: 'var(--gray-600)' }}>
+                          {usuario.phone || '-'}
+                        </span>
+                      </td>
+                      <td style={{ maxWidth: '150px' }}>
+                        <span style={{ 
+                          color: 'var(--gray-600)',
+                          fontSize: '0.9rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          display: 'block'
+                        }}>
+                          {usuario.shipping_address || '-'}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ color: 'var(--gray-600)', fontSize: '0.9rem' }}>
+                          {new Date(usuario.created_at).toLocaleDateString('es-ES')}
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn-secondary" 
+                            style={{ 
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            Editar
+                          </button>
+                          <button 
+                            className="btn-link" 
+                            style={{ 
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.8rem',
+                              color: 'var(--error)'
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </main>
       </div>

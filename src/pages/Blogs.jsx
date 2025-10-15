@@ -10,7 +10,7 @@ export default function Blogs() {
           <h1 className="blogs-title">Últimas noticias y novedades</h1>
           <div className="blogs-grid">
             <div className="blog-card">
-              <img src="/assets/blog1.jpg" alt="Blog 1" />
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=300&fit=crop" alt="Blog 1" />
               <div className="blog-content">
                 <h2>¿Cómo elegir el mejor producto para ti?</h2>
                 <p>

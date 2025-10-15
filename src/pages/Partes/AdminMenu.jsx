@@ -13,6 +13,7 @@ export default function AdminMenu() {
   return (
     <aside className="sidebar" id="sidebar">
       <div className="sidebar-header">
+        <Link to="/">Home</Link>
         <span className="sidebar-logo">🛒</span>
         <span className="sidebar-title">Company</span>
         <button className="sidebar-toggle" id="sidebarToggle" aria-label="Abrir/Cerrar menú">

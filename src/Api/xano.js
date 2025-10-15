@@ -1,125 +1,283 @@
-import axios from "axios";
+// src/Api/xano.js
 
-const BASE_URL = import.meta.env.VITE_XANO_BASE_URL || ''
-const API_KEY = import.meta.env.VITE_XANO_API_KEY || ''
+// 🔹 URLs COMPLETAS de Xano
+const AUTH_BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:HJwsqpRg';
+const BASE_URL = 'https://x8ki-letl-twmt.n7.xano.io/api:fOtP60Ek';
 
-// Simple token storage
-const TOKEN_KEY = 'auth_token'
+console.log('🔄 URLs configuradas en xano.js:');
+console.log('AUTH_BASE_URL:', AUTH_BASE_URL);
+console.log('BASE_URL:', BASE_URL);
+
+// 🔹 Token storage
+const TOKEN_KEY = 'auth_token';
 export function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || ''
+  return localStorage.getItem(TOKEN_KEY) || '';
 }
 export function setToken(token) {
-  if (token) localStorage.setItem(TOKEN_KEY, token)
+  if (token) localStorage.setItem(TOKEN_KEY, token);
 }
 export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY)
+  localStorage.removeItem(TOKEN_KEY);
 }
 
-const api = axios.create({
-	baseURL: BASE_URL,
-	headers: {
-		'Content-Type': 'application/json',
-		...(API_KEY ? { 'Authorization': `Bearer ${API_KEY}` } : {})
-	}
-})
+// 🔹 AUTENTICACIÓN
+export async function login({ email, password }) {
+  try {
+    const URL_COMPLETA = 'https://x8ki-letl-twmt.n7.xano.io/api:HJwsqpRg/auth/login';
+    console.log('🎯 Enviando login a Xano...');
+    
+    const requestBody = {
+      email: email,
+      password: password
+    };
+    
+    console.log('📦 Request body para Xano:', requestBody);
+    
+    const response = await fetch(URL_COMPLETA, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    console.log('📊 Status:', response.status);
+    console.log('📋 OK:', response.ok);
+    
+    const responseText = await response.text();
+    console.log('📄 Response:', responseText);
+    
+    if (!response.ok) {
+      console.error('❌ Error HTTP:', response.status);
+      throw new Error(`Error en login: ${response.status} - ${responseText}`);
+    }
+    
+    const data = JSON.parse(responseText);
+    console.log('✅ Login exitoso:', data);
+    
+    const { authToken } = data || {};
+    if (!authToken) {
+      throw new Error('No se recibió token de autenticación');
+    }
 
-// Attach auth token if present
-api.interceptors.request.use((config) => {
-  const token = getToken()
-  if (token) {
-    config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${token}`
+    console.log('🔑 Token recibido correctamente');
+    setToken(authToken);
+    
+    return { 
+      token: authToken, 
+      user: data.user || { email: email } 
+    };
+    
+  } catch (err) {
+    console.error('❌ Error completo en login:', err);
+    throw err;
   }
-  return config
-})
+}
+
+export async function signup({ name, email, password }) {
+  try {
+    const URL_COMPLETA = 'https://x8ki-letl-twmt.n7.xano.io/api:HJwsqpRg/auth/signup';
+    console.log('📝 Intentando registro en Xano...');
+    
+    const requestBody = {
+      name: name,
+      email: email,
+      password: password
+    };
+    
+    console.log('📦 Signup body para Xano:', requestBody);
+    
+    const response = await fetch(URL_COMPLETA, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+    
+    console.log('📊 Status signup:', response.status);
+    
+    const responseText = await response.text();
+    console.log('📄 Response signup:', responseText);
+    
+    if (!response.ok) {
+      throw new Error(`Error en registro: ${response.status} - ${responseText}`);
+    }
+    
+    const data = JSON.parse(responseText);
+    console.log('✅ Signup exitoso:', data);
+    
+    const { authToken } = data || {};
+    if (!authToken) throw new Error('No se recibió authToken');
+
+    setToken(authToken);
+    
+    return { 
+      token: authToken, 
+      user: data.user || { name, email } 
+    };
+  } catch (err) {
+    console.error('❌ Error en signup:', err);
+    throw err;
+  }
+}
+
+export async function getCurrentUser() {
+  const token = getToken();
+  if (!token) {
+    console.log('🔐 No hay token, usuario no autenticado');
+    return null;
+  }
+  
+  try {
+    const response = await fetch('https://x8ki-letl-twmt.n7.xano.io/api:HJwsqpRg/auth/me', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}`);
+    }
+    
+    const userData = await response.json();
+    return userData;
+  } catch (err) {
+    console.error('❌ Error obteniendo usuario:', err);
+    return null;
+  }
+}
+
+// 🔹 PRODUCTOS 
+export async function fetchProducts(params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  const url = `${BASE_URL}/product${queryString ? `?${queryString}` : ''}`;
+  
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
 
 export async function fetchProductById(id) {
-	// Xano table: product
-	// Ajusta endpoint si en Xano tu collection usa /product/{id}
-	const res = await api.get(`/product/${id}`)
-	return res.data
-}
-
-export async function fetchProducts(params = {}) {
-	const res = await api.get('/product', { params })
-	return res.data
-}
-
-export async function createProduct(productData) {
-	const res = await api.post('/product', productData)
-	return res.data
+  const response = await fetch(`${BASE_URL}/product/${id}`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
 export async function fetchRelatedProducts(category, limit = 5) {
-	// Supone que Xano soporta filtrado por category
-	const res = await api.get('/product', { params: { category, limit } })
-	return res.data
+  try {
+    const queryString = new URLSearchParams({ 
+      category: category,
+      limit: limit 
+    }).toString();
+    
+    const url = `${BASE_URL}/product?${queryString}`;
+    console.log('🔍 Buscando productos relacionados:', url);
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+    
+    const data = await response.json();
+    console.log('✅ Productos relacionados encontrados:', data.length);
+    return data;
+  } catch (err) {
+    console.error('❌ Error buscando productos relacionados:', err);
+    return [];
+  }
 }
 
-// CART helpers
+export async function createProduct(productData) {
+  const response = await fetch(`${BASE_URL}/product`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(productData)
+  });
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
+
+// 🔹 CARRITO
 export async function fetchCartByUser(userId) {
-	// returns array of carts for user
-	const res = await api.get('/cart', { params: { user_id: userId } })
-	return res.data
+  const response = await fetch(`${BASE_URL}/cart?user_id=${userId}`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
 export async function fetchCartItems(cartId) {
-	const res = await api.get('/cart_item', { params: { cart_id: cartId } })
-	return res.data
-}
-
-export async function createCartForUser(userId) {
-	const res = await api.post('/cart', { user_id: userId })
-	return res.data
+  const response = await fetch(`${BASE_URL}/cart_item?cart_id=${cartId}`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
 export async function addCartItem(cartId, productId, quantity = 1) {
-	const res = await api.post('/cart_item', { cart_id: cartId, product_id: productId, quantity })
-	return res.data
+  const response = await fetch(`${BASE_URL}/cart_item`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      cart_id: cartId,
+      product_id: productId,
+      quantity: quantity
+    })
+  });
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
 export async function updateCartItem(itemId, updates) {
-	const res = await api.patch(`/cart_item/${itemId}`, updates)
-	return res.data
+  const response = await fetch(`${BASE_URL}/cart_item/${itemId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates)
+  });
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
 export async function deleteCartItem(itemId) {
-	const res = await api.delete(`/cart_item/${itemId}`)
-	return res.data
+  const response = await fetch(`${BASE_URL}/cart_item/${itemId}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
-// AUTH
-// Base groups
-const AUTH_BASE = import.meta.env.VITE_XANO_AUTH_BASE || '' // e.g. https://x8ki-.../api:HJwsqpRg
-
-export async function login({ email, password }) {
-  const base = AUTH_BASE || BASE_URL
-  const res = await axios.post(`${base}/auth/login`, { email, password })
-  const { authToken, user } = res.data || {}
-  if (authToken) setToken(authToken)
-  return { token: authToken, user }
-}
-
-export async function signup({ name, last_name, email, password, phone, shipping_address }) {
-  const base = AUTH_BASE || BASE_URL
-  const res = await axios.post(`${base}/auth/signup`, { name, last_name, email, password, phone, shipping_address })
-  const { authToken, user } = res.data || {}
-  if (authToken) setToken(authToken)
-  return { token: authToken, user }
-}
-
-export async function me() {
-  const base = AUTH_BASE || BASE_URL
-  const token = getToken()
-  if (!token) return null
-  const res = await axios.get(`${base}/auth/me`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  return res.data
-}
-
+// 🔹 USUARIOS
 export async function fetchUsers() {
-  const res = await api.get('/user')
-  return res.data
+  const response = await fetch(`${BASE_URL}/user`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
 }
 
+// 🔹 ÓRDENES
+export async function fetchOrders() {
+  const response = await fetch(`${BASE_URL}/order`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
+
+export async function createOrder(orderData) {
+  const response = await fetch(`${BASE_URL}/order`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderData)
+  });
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
+
+// 🔹 ENVÍOS
+export async function fetchShipping() {
+  const response = await fetch(`${BASE_URL}/shipping`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
