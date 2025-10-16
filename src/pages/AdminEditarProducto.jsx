@@ -289,7 +289,7 @@ function AdminEditarProducto() {
                         Imagen actual:
                       </p>
                       <img 
-                        src={currentProduct.images[0]} 
+                        src={currentProduct.images[0]} // ← CAMBIAR images POR images[0]
                         alt="Actual"
                         style={{ 
                           width: '200px', 

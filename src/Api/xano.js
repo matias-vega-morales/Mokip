@@ -44,7 +44,7 @@ export async function login({ email, password }) {
     console.log('📊 Status:', response.status);
     
     const responseText = await response.text();
-    console.log('📄 Response COMPLETA de Xano:', responseText); // ← ESTA LÍNEA NUEVA
+    console.log('📄 Response COMPLETA de Xano:', responseText);
     
     if (!response.ok) {
       console.error('❌ Error HTTP:', response.status);
@@ -52,15 +52,13 @@ export async function login({ email, password }) {
     }
     
     const data = JSON.parse(responseText);
-    console.log('✅ Login exitoso - Datos COMPLETOS:', data); // ← ESTA LÍNEA NUEVA
+    console.log('✅ Login exitoso - Datos COMPLETOS:', data);
     
-    // ↓↓ ESTAS 4 LÍNEAS NUEVAS PARA DEBUG ↓↓
     console.log('🔑 Token recibido:', data.authToken ? 'SÍ' : 'NO');
     console.log('👤 Datos del usuario:', data.user);
     if (data.user) {
       console.log('🔍 Campos del usuario:', Object.keys(data.user));
     }
-    // ↑↑ FIN DE LÍNEAS NUEVAS ↑↑
     
     const { authToken } = data || {};
     if (!authToken) {
@@ -71,7 +69,7 @@ export async function login({ email, password }) {
     
     return { 
       token: authToken, 
-      user: data.user || { email: email }  // ← Asegúrate que es data.user
+      user: data.user || { email: email }
     };
     
   } catch (err) {
@@ -272,37 +270,6 @@ export async function updateProduct(productId, updates) {
   }
 }
 
-// 🔹 SUBIR IMAGEN A PRODUCTO EXISTENTE
-export async function uploadProductImage(productId, imageFile) {
-  try {
-    console.log('🖼️ Subiendo imagen para producto:', productId);
-    
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    
-    // NOTA: Necesitarás crear un endpoint específico en Xano para subir imágenes
-    // Por ahora, usaremos un approach diferente
-    const response = await fetch(`${BASE_URL}/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error subiendo imagen: ${response.status}`);
-    }
-    
-    const imageData = await response.json();
-    console.log('✅ Imagen subida:', imageData);
-    
-    // Retornar la URL de la imagen para usarla en el producto
-    return imageData.url;
-    
-  } catch (err) {
-    console.error('❌ Error subiendo imagen:', err);
-    throw err;
-  }
-}
-
 // 🔹 CARRITO
 export async function fetchCartByUser(userId) {
   const response = await fetch(`${BASE_URL}/cart?user_id=${userId}`);
@@ -385,7 +352,7 @@ export async function fetchShipping() {
   return await response.json();
 }
 
-// 🔹 CREAR CARRITO - AGREGAR ESTA FUNCIÓN AL FINAL DEL ARCHIVO
+// 🔹 CREAR CARRITO
 export async function createCart(cartData) {
   try {
     console.log('🛒 Creando nuevo carrito:', cartData);
@@ -405,6 +372,81 @@ export async function createCart(cartData) {
     
   } catch (err) {
     console.error('❌ Error creando carrito:', err);
+    throw err;
+  }
+}
+
+// 🔹 SUBIR IMAGEN A XANO
+export async function uploadImageToXano(imageFile) {
+  try {
+    console.log('🖼️ Subiendo imagen a Xano...', imageFile.name);
+    
+    const formData = new FormData();
+    formData.append('file', imageFile);
+    
+    // Usa el endpoint /upload que creaste en Xano
+    const response = await fetch(`${BASE_URL}/upload`, {
+      method: 'POST',
+      body: formData  // NO incluir Content-Type header
+    });
+    
+    console.log('📊 Status de upload:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error subiendo imagen: ${response.status} - ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Imagen subida exitosamente:', result);
+    
+    // Xano devuelve { url: "https://..." } o directamente la URL
+    return result.url || result;
+    
+  } catch (err) {
+    console.error('❌ Error subiendo imagen:', err);
+    throw err;
+  }
+}
+
+// 🔹 ACTUALIZAR PRODUCTO CON IMAGEN
+export async function updateProductWithImage(productId, updates, imageFile = null) {
+  try {
+    console.log('🔄 Actualizando producto con imagen...', productId);
+    
+    let finalUpdates = { ...updates };
+    
+    // Si hay nueva imagen, subirla primero
+    if (imageFile) {
+      console.log('📤 Subiendo nueva imagen...');
+      const imageUrl = await uploadImageToXano(imageFile);
+      finalUpdates.images = [imageUrl]; // Reemplazar array de imágenes
+      console.log('✅ Imagen subida, URL:', imageUrl);
+    }
+    
+    console.log('📦 Datos finales para actualizar:', finalUpdates);
+    
+    const response = await fetch(`${BASE_URL}/product/${productId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(finalUpdates)
+    });
+    
+    console.log('📊 Status de actualización:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Producto actualizado exitosamente:', result);
+    return result;
+    
+  } catch (err) {
+    console.error('❌ Error actualizando producto con imagen:', err);
     throw err;
   }
 }
