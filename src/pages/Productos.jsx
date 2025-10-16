@@ -42,7 +42,7 @@ export const Productos = () => {
         }
         if (product.image) return product.image
         if (product.img) return product.img
-        return 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'
+        return ''
     }
 
     // Función para obtener el nombre
@@ -153,7 +153,7 @@ export const Productos = () => {
                                     alt={getName(product)} 
                                     className="img-producto" 
                                     onError={(e) => {
-                                        e.target.src = 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'
+                                        e.target.src = ''
                                     }}
                                 />
                                 <div className="product-info">
