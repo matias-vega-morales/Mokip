@@ -16,7 +16,7 @@ export default function Blogs() {
             id: 1,
             title: "¿Cómo elegir el mejor regalo?",
             excerpt: "Descubre consejos prácticos para seleccionar reaglos que se adapten a a los gustos de cada uno.",
-            image: "/assets/blog1.jpg",
+            image: "/src/assets/images/Regalos.jpeg",
             date: "15 Mar 2025",
             
             category: "Consejos",
@@ -27,7 +27,7 @@ export default function Blogs() {
             id: 2,
             title: "Novedades de la temporada",
             excerpt: "Conoce los lanzamientos más recientes y las tendencias que están marcando el mercado este año.",
-            image: "/assets/blog2.jpg",
+            image: "/src/assets/images/Calendario.jpeg",
             date: "12 Mar 2025",
             
             category: "Novedades",
@@ -37,7 +37,7 @@ export default function Blogs() {
             id: 3,
             title: "Tips para comprar online en la tienda ",
             excerpt: "Aprende a proteger tus datos y a identificar tiendas confiables para una experiencia de compra segura.",
-            image: "/assets/blog3.jpg",
+            image: "/src/assets/images/Compras.jpeg",
             date: "10 Mar 2025",
            
             category: "Compras",
@@ -47,7 +47,7 @@ export default function Blogs() {
             id: 4,
             title: "Devolucion de dinero",
             excerpt: "Aprende los siguientes paso para que puedas pedir una devolucion.",
-            image: "/assets/blog4.jpg",
+            image: "/src/assets/images/Devolucion.jpg",
             date: "8 Mar 2025",
             category: "Sostenibilidad",
             author: "David Rodríguez"
@@ -56,7 +56,7 @@ export default function Blogs() {
             id: 5,
             title: "¿Como se manejaran tus datos?",
             excerpt: "Descubre el uso que le daremos tus datos y como estaran seguros .",
-            image: "/assets/blog5.jpg",
+            image: "/src/assets/images/Datos.jpg",
             date: "5 Mar 2025",
             category: "Tecnología",
             author: "Laura Sánchez"
@@ -65,7 +65,7 @@ export default function Blogs() {
             id: 6,
             title: "Guía completa de devoluciones y garantías",
             excerpt: "Todo lo que necesitas saber sobre políticas de devolución y cómo ejercer tus derechos como consumidor.",
-            image: "/assets/blog6.jpg",
+            image: "/src/assets/images/Guia.webp",
             date: "1 Mar 202",
            
             category: "Guías",

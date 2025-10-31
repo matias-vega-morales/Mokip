@@ -5,21 +5,21 @@
 
 /* Variables CSS para consistencia */
 :root {
-  /* Colores principales - Psicología del color */
-  --primary-blue: #2563eb;        /* Azul confianza y profesionalismo */
-  --primary-blue-dark: #1d4ed8;   /* Azul más oscuro para contraste */
-  --primary-blue-light: #3b82f6;  /* Azul más claro para hover */
-  --accent-orange: #f97316;       /* Naranja energía y creatividad */
-  --accent-orange-dark: #ea580c;  /* Naranja oscuro para contraste */
-  --accent-orange-light: #fb923c; /* Naranja claro para hover */
+  /* Colores principales  */
+  --primary-blue: #ac25eb;        /* Azul  */
+  --primary-blue-dark: #751212d7;   /* contraste del otor */
+  --primary-blue-light: #923bf6;  /* color de contraste*/
+  --accent-orange: #69f916c0;       /* Naranja energía y creatividad */
+  --accent-orange-dark: #70ea0cce;  /* Naranja oscuro para contraste */
+  --accent-orange-light: #82fb3cc7; /* Naranja claro para hover */
   
   /* Colores neutros */
-  --white: #ffffff;
+  --white: #ffffff;/*son las tarjetas y el menu*/
   --gray-50: #f8fafc;
   --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
+  --gray-200: #e2e8f0;/*bordes*/
   --gray-300: #cbd5e1;
-  --gray-400: #94a3b8;
+  --gray-400: #842c96;/*letras de footer*/
   --gray-500: #64748b;
   --gray-600: #475569;
   --gray-700: #334155;
@@ -29,7 +29,7 @@
   /* Colores de estado */
   --success: #10b981;
   --warning: #f59e0b;
-  --error: #ef4444;
+  --error: #f73a3a;
   --info: #06b6d4;
   
   /* Tipografía */
@@ -598,7 +598,7 @@ tr:hover {
   font-weight: 600;
   text-transform: uppercase;
 }
-
+/*parte de adminnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn*/
 .role-badge.admin {
   background-color: #fef3c7;
   color: #92400e;
@@ -780,7 +780,7 @@ tr:hover {
 .hero-subtitle {
   font-size: 1.25rem;
   margin-bottom: var(--spacing-2xl);
-  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.95);
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -1142,4 +1142,523 @@ tr:hover {
 }
 
 /*contactoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo*/
+/* ===== ESTILOS ESPECÍFICOS PARA CONTACTO ===== */
 
+/* Main container */
+/* Hero Section Contacto - CORREGIDO */
+.contacto-hero {
+  position: relative;
+  height: 400px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-light) 100%);
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(172, 37, 235, 0.9) 0%,
+    rgba(146, 59, 246, 0.8) 100%
+  );
+  z-index: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: relative;
+  z-index: 0;
+  opacity: 0.3; /* Hacer la imagen más transparente para que se vea mejor el gradiente */
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  padding: 0 var(--spacing-md);
+}
+/* Contacto Grid Layout */
+.contacto-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: var(--spacing-2xl);
+  margin: var(--spacing-3xl) 0;
+  align-items: start;
+}
+
+/* Información de Contacto */
+.contacto-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.info-card {
+  background: var(--white);
+  padding: var(--spacing-2xl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.info-card h2 {
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-md);
+  font-size: 1.5rem;
+}
+
+.info-description {
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-xl);
+  line-height: 1.6;
+}
+
+/* Métodos de Contacto */
+.contact-methods {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.contact-method {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-lg);
+  transition: all var(--transition-fast);
+  background: var(--gray-50);
+}
+
+.contact-method:hover {
+  background: var(--gray-100);
+  transform: translateX(4px);
+}
+
+.method-icon {
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-blue);
+  color: var(--white);
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
+.method-info h3 {
+  font-size: 1rem;
+  color: var(--gray-700);
+  margin-bottom: var(--spacing-xs);
+}
+
+.method-link {
+  color: var(--primary-blue);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.method-link:hover {
+  color: var(--primary-blue-dark);
+  text-decoration: underline;
+}
+
+/* Redes Sociales */
+.social-links {
+  border-top: 1px solid var(--gray-200);
+  padding-top: var(--spacing-lg);
+}
+
+.social-links h3 {
+  font-size: 1.125rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--gray-800);
+}
+
+.social-icons {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--gray-100);
+  border-radius: var(--border-radius-md);
+  text-decoration: none;
+  font-size: 1.25rem;
+  transition: all var(--transition-fast);
+}
+
+.social-link:hover {
+  background: var(--primary-blue);
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* FAQ Section */
+.faq-section {
+  background: var(--white);
+  padding: var(--spacing-2xl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.faq-section h2 {
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  font-size: 1.5rem;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.faq-item {
+  padding: var(--spacing-lg);
+  background: var(--gray-50);
+  border-radius: var(--border-radius-lg);
+  border-left: 4px solid var(--primary-blue);
+}
+
+.faq-item h3 {
+  font-size: 1.125rem;
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-sm);
+}
+
+.faq-item p {
+  color: var(--gray-600);
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+/* Formulario de Contacto */
+.contacto-form-container {
+  background: var(--white);
+  padding: var(--spacing-2xl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  position: sticky;
+  top: 100px;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.form-header h2 {
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-sm);
+  font-size: 1.75rem;
+}
+
+.form-header p {
+  color: var(--gray-600);
+  margin-bottom: 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Inputs específicos del formulario de contacto */
+.contacto-form input,
+.contacto-form select,
+.contacto-form textarea {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  background-color: var(--white);
+  font-family: var(--font-primary);
+}
+
+.contacto-form input:focus,
+.contacto-form select:focus,
+.contacto-form textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(172, 37, 235, 0.1);
+}
+
+.contacto-form textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: var(--font-primary);
+}
+
+/* Estados de error */
+.input-error {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 3px rgba(247, 58, 58, 0.1) !important;
+}
+
+.error-message {
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.error-message::before {
+  content: '⚠';
+  font-size: 0.75rem;
+}
+
+/* Footer del textarea */
+.textarea-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-xs);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+}
+
+.char-count.warning {
+  color: var(--warning);
+}
+
+.char-count.error {
+  color: var(--error);
+}
+
+/* Botón de enviar específico */
+.submit-btn {
+  width: 100%;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn.loading {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.submit-btn .spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Página de éxito */
+.contacto-success {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl) var(--spacing-md);
+}
+
+.success-container {
+  text-align: center;
+  max-width: 500px;
+  background: var(--white);
+  padding: var(--spacing-3xl);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-xl);
+}
+
+.success-icon {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-xl);
+  animation: bounce 1s ease-in-out;
+}
+
+.success-container h1 {
+  color: var(--gray-900);
+  margin-bottom: var(--spacing-lg);
+  font-size: 2rem;
+}
+
+.success-container p {
+  color: var(--gray-600);
+  margin-bottom: var(--spacing-2xl);
+  line-height: 1.6;
+  font-size: 1.125rem;
+}
+
+.success-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Responsive Design para Contacto */
+@media (max-width: 1024px) {
+  .contacto-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-xl);
+  }
+  
+  .contacto-form-container {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .contacto-hero {
+    height: 300px;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.125rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+  
+  .contact-method {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .method-icon {
+    align-self: center;
+  }
+  
+  .success-actions {
+    flex-direction: column;
+  }
+  
+  .success-actions .btn-primary,
+  .success-actions .btn-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .contacto-info,
+  .contacto-form-container,
+  .info-card,
+  .faq-section {
+    padding: var(--spacing-lg);
+  }
+  
+  .hero-title {
+    font-size: 1.75rem;
+  }
+  
+  .success-container {
+    padding: var(--spacing-xl);
+  }
+  
+  .social-icons {
+    justify-content: center;
+  }
+}
+
+/* Animaciones específicas */
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Utilidades específicas para contacto */
+.contacto-main .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Asegurar que no haya conflictos con otros componentes */
+.contacto-main * {
+  box-sizing: border-box;
+}
+
+/* Estados de hover específicos para contacto */
+.contacto-form input:hover:not(:focus):not(.input-error),
+.contacto-form select:hover:not(:focus):not(.input-error),
+.contacto-form textarea:hover:not(:focus):not(.input-error) {
+  border-color: var(--gray-400);
+}
+
+/* Estilos para select específico */
+.contacto-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}

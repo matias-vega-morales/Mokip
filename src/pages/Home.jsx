@@ -83,7 +83,7 @@ export default function Home() {
 
           <div className="hero-image fade-in">
             <img 
-              src="https://images.unsplash.com/photo-1441986300917-?w=800&h=600&fit=crop" 
+              src="/src/assets/images/Closet.webp" 
               alt="Tienda moderna con productos de calidad" 
             />
           </div>

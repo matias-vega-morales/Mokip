@@ -26,7 +26,7 @@ export const Footer = () => {
                         <div className="footer-column">
                             <div className="footer-brand">
                                 <img 
-                                    src="https://upload.wikimedia.org/wikipedia/commons/7/72/Gengar_face.png" 
+                                    src="/src/assets/images/Logo.png"
                                     alt="MoKip - Tienda Online" 
                                     className="footer-logo"
                                 />
@@ -36,17 +36,14 @@ export const Footer = () => {
                                 </p>
                             </div>
                             <div className="social-links">
-                                <a href="#" className="social-link" aria-label="Facebook">
-                                    <i className="bi bi-facebook"></i>
+                                <a href="https://www.whatsapp.com/?lang=es" className="social-link" aria-label="whatsapp">
+                                    <img src="/src/assets/images/whatsapp.png" alt="wats" />
                                 </a>
-                                <a href="#" className="social-link" aria-label="Instagram">
-                                    <i className="bi bi-instagram"></i>
+                                <a href="https://www.instagram.com" className="social-link" aria-label="Instagram">
+                                    <img src="/src/assets/images/Instagram.png" alt="Insta" />
                                 </a>
-                                <a href="#" className="social-link" aria-label="Twitter">
-                                    <i className="bi bi-twitter"></i>
-                                </a>
-                                <a href="#" className="social-link" aria-label="LinkedIn">
-                                    <i className="bi bi-linkedin"></i>
+                                <a href="https://x.com/?lang=es" className="social-link" aria-label="Twitter">
+                                <img src="/src/assets/images/X.png" alt="X" />
                                 </a>
                             </div>
                         </div>
@@ -157,7 +154,7 @@ export const Footer = () => {
                 .footer-logo {
                     height: 40px;
                     margin-bottom: 1rem;
-                    filter: brightness(0) invert(1);
+          
                 }
 
                 .footer-description {
