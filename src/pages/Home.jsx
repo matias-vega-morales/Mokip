@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Menu from './Partes/Menu'
 import { Footer } from './Partes/Footer'
 import { fetchProducts } from '../Api/xano'
+import ProductosList from './Partes/ProductosList' // Importa el componente existente
 
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState([])
@@ -19,7 +20,6 @@ export default function Home() {
         console.log('✅ Productos cargados para home:', productsData)
         
         // Tomar los primeros 4 productos como destacados
-        // Puedes ajustar esta lógica para productos realmente destacados
         if (Array.isArray(productsData)) {
           const featured = productsData.slice(0, 4) // Primeros 4 productos
           setFeaturedProducts(featured)
@@ -36,32 +36,6 @@ export default function Home() {
 
     loadFeaturedProducts()
   }, [])
-
-  // Función para obtener la URL de la imagen
-  const getImageUrl = (product) => {
-    if (product.images && product.images[0]) {
-      return product.images[0].url || product.images[0]
-    }
-    if (product.image) return product.image
-    if (product.img) return product.img
-    return ''
-  }
-
-  // Función para obtener el nombre
-  const getName = (product) => {
-    return product.name || product.title || 'Producto sin nombre'
-  }
-
-  // Función para formatear precio
-  const formatPrice = (price) => {
-    if (typeof price === 'number') {
-      return `$${price.toLocaleString('es-CL')}`
-    }
-    if (typeof price === 'string') {
-      return price.includes('$') ? price : `$${price}`
-    }
-    return '$0'
-  }
 
   return (
     <>
@@ -81,7 +55,7 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="hero-image fade-in">
+          <div>
             <img 
               src="/src/assets/images/Closet.webp" 
               alt="Tienda moderna con productos de calidad" 
@@ -90,72 +64,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Productos Destacados - Sección de productos principales */}
+      {/* Productos Destacados usando el componente ProductosList existente */}
       <section className="products-section">
         <div className="container">
-          <div className="text-center mb-5">
-            <h2>Productos Destacados</h2>
-            <p>Los productos más populares y mejor valorados por nuestros clientes</p>
-          </div>
+          <ProductosList 
+            products={featuredProducts}
+            loading={loading}
+            error={error}
+            title="Productos Destacados"
+            subtitle="Los productos más populares y mejor valorados por nuestros clientes"
+            showCount={false}
+            emptyMessage={
+              <>
+                <p>No hay productos destacados disponibles en este momento.</p>
+                <Link to="/productos" className="btn-primary mt-3">
+                  Ver Todos los Productos
+                </Link>
+              </>
+            }
+            loadingMessage="Cargando productos destacados..."
+          />
           
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Cargando...</span>
-              </div>
-              <p className="mt-3">Cargando productos destacados...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-5">
-              <div className="alert alert-warning">
-                <p>{error}</p>
-              </div>
-            </div>
-          ) : featuredProducts.length === 0 ? (
-            <div className="text-center py-5">
-              <p>No hay productos destacados disponibles en este momento.</p>
-              <Link to="/productos" className="btn-primary mt-3">
+          {/* Botón Ver Todos los Productos */}
+          {!loading && !error && featuredProducts.length > 0 && (
+            <div className="text-center mt-5">
+              <Link to="/productos" className="btn-secondary">
                 Ver Todos los Productos
               </Link>
             </div>
-          ) : (
-            <>
-              <div className="products-grid">
-                {featuredProducts.map(product => (
-                  <div key={product.id} className="product-card">
-                    <img 
-                      src={getImageUrl(product)} 
-                      alt={getName(product)} 
-                      className="img-producto" 
-                      onError={(e) => {
-                        e.target.src = ''
-                      }}
-                    />
-                    <div className="product-info">
-                      <h3 className="product-title">{getName(product)}</h3>
-                      <p className="product-price">{formatPrice(product.price)}</p>
-                      <Link 
-                        to={`/productos/${product.id}`} 
-                        className="add-to-cart"
-                        style={{
-                          display: 'block',
-                          textDecoration: 'none',
-                          textAlign: 'center'
-                        }}
-                      >
-                        Ver Detalles
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="text-center mt-5">
-                <Link to="/productos" className="btn-secondary">
-                  Ver Todos los Productos
-                </Link>
-              </div>
-            </>
           )}
         </div>
       </section>
