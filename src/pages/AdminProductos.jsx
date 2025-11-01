@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import AdminMenu from './Partes/AdminMenu'
 import { Link } from 'react-router-dom'
-import { fetchProducts } from '../Api/xano'
+import { fetchProducts, deleteProduct } from '../Api/xano'
 
 export default function AdminProductos() {
   const [productos, setProductos] = useState([])
@@ -22,6 +22,22 @@ export default function AdminProductos() {
       setError('Error al cargar productos')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleDeleteProduct(producto) {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar el producto "${producto.name}"? Esta acción no se puede deshacer.`)) {
+      return
+    }
+    
+    try {
+      await deleteProduct(producto.id)
+      
+      // Remover el producto de la lista
+      setProductos(productos.filter(p => p.id !== producto.id))
+    } catch (err) {
+      console.error('Error al eliminar producto:', err)
+      alert(`Error al eliminar el producto: ${err.message}`)
     }
   }
 
@@ -176,10 +192,12 @@ export default function AdminProductos() {
                           </Link>
                           <button 
                             className="btn-link" 
+                            onClick={() => handleDeleteProduct(producto)}
                             style={{ 
                               padding: '0.25rem 0.5rem',
                               fontSize: '0.8rem',
-                              color: 'var(--error)'
+                              color: 'var(--error)',
+                              cursor: 'pointer'
                             }}
                           >
                             Eliminar

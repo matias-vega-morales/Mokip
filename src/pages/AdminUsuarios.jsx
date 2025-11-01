@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import AdminMenu from './Partes/AdminMenu'
-import { fetchUsers } from '../Api/xano'
+import { fetchUsers, updateUser, deleteUser } from '../Api/xano'
 
 export default function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([])
@@ -21,6 +21,49 @@ export default function AdminUsuarios() {
       setError('Error al cargar usuarios')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleToggleBlock(usuario) {
+    try {
+      const nuevoEstado = usuario.status === 'blocked' ? 'active' : 'blocked'
+      
+      // Enviar todos los campos necesarios del usuario con el estado actualizado
+      const datosActualizados = {
+        name: usuario.name || '',
+        last_name: usuario.last_name || '',
+        email: usuario.email || '',
+        status: nuevoEstado,
+        ...(usuario.role && { role: usuario.role }),
+        ...(usuario.phone && { phone: usuario.phone }),
+        ...(usuario.shipping_address && { shipping_address: usuario.shipping_address })
+      }
+      
+      await updateUser(usuario.id, datosActualizados)
+      
+      // Actualizar el estado local
+      setUsuarios(usuarios.map(u => 
+        u.id === usuario.id ? { ...u, status: nuevoEstado } : u
+      ))
+    } catch (err) {
+      console.error('Error al cambiar estado del usuario:', err)
+      alert(`Error al cambiar el estado del usuario: ${err.message}`)
+    }
+  }
+
+  async function handleDeleteUser(usuario) {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar al usuario ${usuario.name} ${usuario.last_name}? Esta acción no se puede deshacer.`)) {
+      return
+    }
+    
+    try {
+      await deleteUser(usuario.id)
+      
+      // Remover el usuario de la lista
+      setUsuarios(usuarios.filter(u => u.id !== usuario.id))
+    } catch (err) {
+      console.error('Error al eliminar usuario:', err)
+      alert(`Error al eliminar el usuario: ${err.message}`)
     }
   }
 
@@ -155,20 +198,28 @@ export default function AdminUsuarios() {
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button 
-                            className="btn-secondary" 
-                            style={{ 
-                              padding: '0.25rem 0.5rem',
-                              fontSize: '0.8rem'
-                            }}
-                          >
-                            Editar
-                          </button>
-                          <button 
-                            className="btn-link" 
+                            className={usuario.status === 'blocked' ? "btn-secondary" : "btn-warning"}
+                            onClick={() => handleToggleBlock(usuario)}
                             style={{ 
                               padding: '0.25rem 0.5rem',
                               fontSize: '0.8rem',
-                              color: 'var(--error)'
+                              backgroundColor: usuario.status === 'blocked' ? 'var(--success)' : 'var(--warning)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            {usuario.status === 'blocked' ? 'Desbloquear' : 'Bloquear'}
+                          </button>
+                          <button 
+                            className="btn-link" 
+                            onClick={() => handleDeleteUser(usuario)}
+                            style={{ 
+                              padding: '0.25rem 0.5rem',
+                              fontSize: '0.8rem',
+                              color: 'var(--error)',
+                              cursor: 'pointer'
                             }}
                           >
                             Eliminar

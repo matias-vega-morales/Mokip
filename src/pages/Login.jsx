@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import Menu from './Partes/Menu'
 import { useNavigate } from 'react-router-dom'
-import { login as xanoLogin, signup as xanoSignup } from '../Api/xano'
+import { login as xanoLogin, signup as xanoSignup, getCurrentUser, fetchUsers } from '../Api/xano'
 import { Footer } from './Partes/Footer'
 
 export default function Login() {
@@ -19,22 +19,68 @@ export default function Login() {
       const res = await xanoLogin({ email, password })
 
       console.log('🔍 Respuesta COMPLETA del login:', res)
-      console.log('🔍 Datos del usuario recibidos:', res.user)
-      if (res && res.user) {
-        console.log('🔍 Campos disponibles en user:', Object.keys(res.user))
-        console.log('🆔 ID del usuario:', res.user.id)
-      }
+      console.log('🔑 Token recibido:', res.token ? 'SÍ' : 'NO')
       
-      if (res && res.user) {
-        localStorage.setItem('auth_user', JSON.stringify(res.user))
-        // Verificar si es admin (por email por ahora, hasta que Xano devuelva el campo role)
-        if (res.user.email === 'admin@mokip.com' || res.user.email === 'admin@duocuc.cl') {
+      if (res && res.token) {
+        // El login fue exitoso, ahora necesitamos obtener los datos completos del usuario
+        // para verificar su estado (el endpoint de login solo devuelve el token)
+        try {
+          // Obtener todos los usuarios y buscar el que coincide por email
+          const usuarios = await fetchUsers()
+          const usuarioCompleto = usuarios.find(u => 
+            u.email && u.email.toLowerCase() === email.toLowerCase()
+          )
+          
+          console.log('👤 Usuario completo encontrado:', usuarioCompleto)
+          console.log('📊 Estado del usuario:', usuarioCompleto?.status)
+          
+          if (usuarioCompleto) {
+            // Verificar si el usuario está bloqueado (comparación más flexible)
+            const statusUsuario = String(usuarioCompleto.status || '').toLowerCase().trim()
+            const estaBloqueado = statusUsuario === 'blocked' || statusUsuario === 'banneado' || statusUsuario === 'bloqueado'
+            
+            console.log('🚫 Usuario bloqueado?:', estaBloqueado)
+            
+            if (estaBloqueado) {
+              console.log('❌ Usuario bloqueado detectado, bloqueando acceso...')
+              setMessage('⚠️ Tu cuenta ha sido bloqueada. Por favor, contacta al administrador.')
+              setLoading(false)
+              // Limpiar el token y usuario
+              localStorage.removeItem('auth_token')
+              localStorage.removeItem('auth_user')
+              return
+            }
+            
+            // Si el usuario no está bloqueado, proceder con el login
+            console.log('✅ Usuario no bloqueado, permitiendo acceso...')
+            // Guardar los datos completos del usuario
+            localStorage.setItem('auth_user', JSON.stringify(usuarioCompleto))
+            // Verificar si es admin (por email por ahora, hasta que Xano devuelva el campo role)
+            if (usuarioCompleto.email === 'admin@mokip.com' || usuarioCompleto.email === 'admin@duocuc.cl') {
+              navigate('/')
+            } else {
+              navigate('/')
+            }
+            setMessage('¡Bienvenido!')
+          } else {
+            console.warn('⚠️ No se encontró el usuario en la base de datos')
+            // Si no encontramos el usuario, usar los datos mínimos del login
+            const usuarioMinimo = res.user || { email: email }
+            localStorage.setItem('auth_user', JSON.stringify(usuarioMinimo))
+            navigate('/')
+            setMessage('¡Bienvenido!')
+          }
+        } catch (fetchErr) {
+          console.error('Error obteniendo datos completos del usuario:', fetchErr)
+          // Si falla obtener los datos completos, proceder con los datos mínimos del login
+          const usuarioMinimo = res.user || { email: email }
+          localStorage.setItem('auth_user', JSON.stringify(usuarioMinimo))
           navigate('/')
-        } else {
-          navigate('/')
+          setMessage('¡Bienvenido!')
         }
+      } else {
+        setMessage('Error: No se recibió token de autenticación')
       }
-      setMessage('¡Bienvenido!')
     } catch (err) {
       setMessage('Error al iniciar sesión')
       console.error(err)
@@ -163,8 +209,8 @@ export default function Login() {
                     marginTop: '1rem', 
                     padding: '0.75rem', 
                     borderRadius: 'var(--border-radius-md)',
-                    backgroundColor: message.includes('Error') ? '#fef2f2' : '#f0fdf4',
-                    color: message.includes('Error') ? 'var(--error)' : 'var(--success)',
+                    backgroundColor: message.includes('Error') || message.includes('bloqueada') ? '#fef2f2' : '#f0fdf4',
+                    color: message.includes('Error') || message.includes('bloqueada') ? 'var(--error)' : 'var(--success)',
                     textAlign: 'center',
                     fontWeight: '500'
                   }}

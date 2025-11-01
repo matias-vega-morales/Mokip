@@ -270,6 +270,31 @@ export async function updateProduct(productId, updates) {
   }
 }
 
+// 🔹 ELIMINAR PRODUCTO
+export async function deleteProduct(productId) {
+  try {
+    console.log('🗑️ Eliminando producto:', productId);
+    
+    const response = await fetch(`${BASE_URL}/product/${productId}`, {
+      method: 'DELETE'
+    });
+    
+    console.log('📊 Status de eliminación:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    console.log('✅ Producto eliminado exitosamente');
+    return true;
+    
+  } catch (err) {
+    console.error('❌ Error eliminando producto:', err);
+    throw err;
+  }
+}
+
 // 🔹 CARRITO
 export async function fetchCartByUser(userId) {
   const response = await fetch(`${BASE_URL}/cart?user_id=${userId}`);
@@ -324,6 +349,105 @@ export async function fetchUsers() {
   const response = await fetch(`${BASE_URL}/user`);
   if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
   return await response.json();
+}
+
+export async function updateUser(userId, updates) {
+  try {
+    const token = getToken();
+    console.log('🔄 Actualizando usuario:', userId, updates);
+    console.log('🔑 Usando token:', token ? 'SÍ' : 'NO');
+    console.log('🔍 ID del usuario:', userId);
+    
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Usar el endpoint PATCH según la configuración de Xano: PATCH user/{user_id}
+    const endpoint = `${BASE_URL}/user/${userId}`;
+    console.log('🔍 Intentando PATCH en:', endpoint);
+    
+    const response = await fetch(endpoint, {
+      method: 'PATCH',
+      headers: headers,
+      body: JSON.stringify(updates)
+    });
+    
+    console.log('📊 Status:', response.status);
+    
+    if (!response.ok) {
+      // Si PATCH falla, intentar con PUT como alternativa
+      if (response.status === 404 || response.status === 405) {
+        console.log('🔄 PATCH falló, intentando con PUT...');
+        const putResponse = await fetch(endpoint, {
+          method: 'PUT',
+          headers: headers,
+          body: JSON.stringify(updates)
+        });
+        
+        if (putResponse.ok) {
+          const result = await putResponse.json();
+          console.log('✅ Usuario actualizado exitosamente con PUT:', result);
+          return result;
+        }
+        
+        const errorText = await putResponse.text();
+        throw new Error(`Error HTTP ${putResponse.status}: ${errorText}`);
+      }
+      
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('✅ Usuario actualizado exitosamente con PATCH:', result);
+    return result;
+    
+  } catch (err) {
+    console.error('❌ Error actualizando usuario:', err);
+    throw err;
+  }
+}
+
+export async function deleteUser(userId) {
+  try {
+    const token = getToken();
+    console.log('🗑️ Eliminando usuario:', userId);
+    console.log('🔑 Usando token:', token ? 'SÍ' : 'NO');
+    console.log('🔍 ID del usuario:', userId);
+    
+    const headers = {};
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Usar el endpoint DELETE según la configuración de Xano: DELETE user/{user_id}
+    const endpoint = `${BASE_URL}/user/${userId}`;
+    console.log('🔍 Intentando DELETE en:', endpoint);
+    
+    const response = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: headers
+    });
+    
+    console.log('📊 Status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+    
+    console.log('✅ Usuario eliminado exitosamente');
+    return true;
+    
+  } catch (err) {
+    console.error('❌ Error eliminando usuario:', err);
+    throw err;
+  }
 }
 
 // 🔹 ÓRDENES
