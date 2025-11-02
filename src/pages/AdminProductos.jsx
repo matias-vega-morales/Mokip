@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import AdminMenu from './Partes/AdminMenu'
 import { Link } from 'react-router-dom'
 import { fetchProducts, deleteProduct } from '../Api/xano'
+import { formatPriceCLP } from './format.js'
 
 export default function AdminProductos() {
   const [productos, setProductos] = useState([])
@@ -109,7 +110,7 @@ export default function AdminProductos() {
                     <tr key={producto.id}>
                       <td>
                         <img 
-                          src={producto.images?.[0] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=60&h=60&fit=crop'} 
+                          src={producto.images?.[0]?.url || '/img/placeholder-product.jpg'} 
                           alt={producto.name}
                           style={{ 
                             width: '50px', 
@@ -146,7 +147,7 @@ export default function AdminProductos() {
                           color: 'var(--primary-blue)',
                           fontSize: '1.1rem'
                         }}>
-                          ${producto.price?.toLocaleString()}
+                          {formatPriceCLP(producto.price)}
                         </span>
                       </td>
                       <td>

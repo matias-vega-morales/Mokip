@@ -43,7 +43,7 @@ function AdminEditarProducto() {
         
         // Si ya tiene imagen, mostrar preview
         if (product.images && product.images.length > 0) {
-          setImagePreview(product.images[0])
+          setImagePreview(product.images[0].url) // CORRECCIÓN: Usar la propiedad .url
         }
         
       } catch (err) {
@@ -289,7 +289,7 @@ function AdminEditarProducto() {
                         Imagen actual:
                       </p>
                       <img 
-                        src={currentProduct.images[0]} 
+                        src={currentProduct.images[0].url} // CORRECCIÓN: Usar la propiedad .url
                         alt="Actual"
                         style={{ 
                           width: '200px', 

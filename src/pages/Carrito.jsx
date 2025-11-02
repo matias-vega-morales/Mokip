@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import Menu from './Partes/Menu'
-import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart } from '../Api/xano'
+import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart, fetchProducts } from '../Api/xano'
 import { Link, useNavigate } from 'react-router-dom'
 import { Footer } from './Partes/Footer'
+import { formatPriceCLP } from './format.js'
+import { useCart } from './CartContext.jsx'
 
 export default function Carrito() {
   const [cart, setCart] = useState(null)
@@ -11,6 +13,7 @@ export default function Carrito() {
   const [error, setError] = useState(null)
   const [updatingItems, setUpdatingItems] = useState(new Set()) // Para evitar múltiples updates
   const navigate = useNavigate()
+  const { updateCartCount } = useCart() // Obtenemos la función para actualizar el contador global
 
   // Memoizar la función para evitar recreaciones
   const getCurrentUser = useCallback(() => {
@@ -57,8 +60,22 @@ export default function Carrito() {
 
         // Cargar items del carrito
         const cartItems = await fetchCartItems(userCart.id)
+        
+        // ENRIQUECER ITEMS DEL CARRITO CON DATOS DEL PRODUCTO
+        // 1. Obtener todos los productos de la tienda
+        const allProducts = await fetchProducts();
+        
+        // 2. Mapear los productos por ID para una búsqueda rápida
+        const productsMap = new Map(allProducts.map(p => [p.id, p]));
+        
+        // 3. Añadir los datos del producto a cada item del carrito
+        const enrichedItems = cartItems.map(item => ({
+          ...item,
+          product_data: productsMap.get(item.product_id) || {}
+        }));
+        
         if (!mounted) return
-        setItems(cartItems || [])
+        setItems(enrichedItems || [])
 
       } catch (err) {
         console.error('❌ Error cargando carrito:', err)
@@ -94,7 +111,10 @@ export default function Carrito() {
       ))
       
       await updateCartItem(itemId, { quantity: newQty })
-      
+
+      // Notificar al contexto que el carrito ha cambiado para actualizar el contador del menú
+      await updateCartCount()
+
     } catch (err) {
       console.error('❌ Error actualizando cantidad:', err)
       // Revertir optimistic update
@@ -113,10 +133,6 @@ export default function Carrito() {
 
   // Eliminar item del carrito
   const handleRemove = async (itemId) => {
-    if (!window.confirm('¿Estás seguro de que quieres eliminar este producto del carrito?')) {
-      return
-    }
-
     try {
       // Optimistic update
       const itemToRemove = items.find(i => i.id === itemId)
@@ -124,6 +140,9 @@ export default function Carrito() {
       
       await deleteCartItem(itemId)
       
+      // Notificar al contexto que el carrito ha cambiado para actualizar el contador del menú
+      await updateCartCount()
+
     } catch (err) {
       console.error('❌ Error eliminando item:', err)
       // Revertir optimistic update
@@ -147,7 +166,7 @@ export default function Carrito() {
 
   // Calcular total de forma eficiente
   const total = items.reduce((sum, item) => {
-    const price = item.price_at_purchase || item.product?.price || 0
+    const price = (item.product_data || item.product)?.price || 0
     const quantity = item.quantity || 1
     return sum + (price * quantity)
   }, 0)
@@ -199,7 +218,9 @@ export default function Carrito() {
               <>
                 <div className="carrito-lista">
                   {items.map(item => {
-                    const price = item.price_at_purchase || item.product?.price || 0
+                    // Asumimos que la API devuelve los datos del producto en el objeto 'product_data'
+                    const productData = item.product_data || item.product || {};
+                    const price = productData.price || 0;
                     const quantity = item.quantity || 1
                     const subtotal = price * quantity
                     const isUpdating = updatingItems.has(item.id)
@@ -211,19 +232,19 @@ export default function Carrito() {
                       >
                         <div className="item-image">
                           <img 
-                            src={item.product?.images?.[0]?.url || item.product?.image || '/img/placeholder-product.jpg'} 
-                            alt={item.product?.name || 'Producto'} 
+                            src={productData.images?.[0]?.url || '/img/placeholder-product.jpg'} 
+                            alt={productData.name || 'Producto'} 
                             loading="lazy"
                           />
                         </div>
                         
                         <div className="item-details">
-                          <h3>{item.product?.name || 'Producto sin nombre'}</h3>
+                          <h3>{productData.name || 'Producto sin nombre'}</h3>
                           <p className="item-description">
-                            {item.product?.description || 'Sin descripción disponible'}
+                            {productData.description || 'Sin descripción disponible'}
                           </p>
                           <div className="item-price-mobile">
-                            ${price.toFixed(2)} c/u
+                            {formatPriceCLP(price)} c/u
                           </div>
                         </div>
 
@@ -248,11 +269,11 @@ export default function Carrito() {
                         </div>
 
                         <div className="item-price">
-                          ${price.toFixed(2)}
+                          {formatPriceCLP(price)}
                         </div>
 
                         <div className="item-subtotal">
-                          ${subtotal.toFixed(2)}
+                          {formatPriceCLP(subtotal)}
                         </div>
 
                         <button 
@@ -274,7 +295,7 @@ export default function Carrito() {
                     
                     <div className="summary-row">
                       <span>Subtotal ({items.length} productos):</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>{formatPriceCLP(total)}</span>
                     </div>
                     
                     <div className="summary-row">
@@ -286,7 +307,7 @@ export default function Carrito() {
                     
                     <div className="summary-total">
                       <span>Total:</span>
-                      <span>${total.toFixed(2)}</span>
+                      <span>{formatPriceCLP(total)}</span>
                     </div>
 
                     <div className="summary-actions">

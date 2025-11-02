@@ -1,14 +1,21 @@
-import React, { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import React, { useEffect, useState, useCallback } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import Menu from './Partes/Menu'
-import { fetchProductById, fetchRelatedProducts } from '../Api/xano'
+import { fetchProductById, fetchRelatedProducts, fetchCartByUser, createCart, addCartItem } from '../Api/xano'
+import { formatPriceCLP } from './format.js'
+import { useCart } from './CartContext.jsx'
 
 export default function ProductoDetalle() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [producto, setProducto] = useState(null)
   const [relacionados, setRelacionados] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [addingToCart, setAddingToCart] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [selectedImageUrl, setSelectedImageUrl] = useState(null)
+  const { updateCartCount } = useCart() // Usamos el contexto del carrito
 
   useEffect(() => {
     let mounted = true
@@ -19,6 +26,11 @@ export default function ProductoDetalle() {
       .then(data => {
         if (!mounted) return
         setProducto(data)
+        // Al cargar el producto, establecer la primera imagen como seleccionada
+        if (data?.images?.[0]?.url) {
+          setSelectedImageUrl(data.images[0].url)
+        }
+
         // try to fetch related by category if available
         const category = data?.category || null
         if (category) {
@@ -36,6 +48,51 @@ export default function ProductoDetalle() {
 
     return () => { mounted = false }
   }, [id])
+
+  const getCurrentUser = useCallback(() => {
+    try {
+      const authUser = localStorage.getItem('auth_user')
+      return authUser ? JSON.parse(authUser) : null
+    } catch (err) {
+      return null
+    }
+  }, [])
+
+  const handleAddToCart = async () => {
+    setAddingToCart(true)
+    setError(null)
+
+    const currentUser = getCurrentUser()
+    if (!currentUser || !currentUser.id) {
+      navigate('/login')
+      return
+    }
+
+    try {
+      // 1. Obtener o crear el carrito del usuario
+      let userCart = await fetchCartByUser(currentUser.id)
+      userCart = userCart?.[0] || await createCart({
+        user_id: currentUser.id,
+        created_at: new Date().toISOString()
+      })
+
+      if (!userCart || !userCart.id) {
+        throw new Error('No se pudo obtener o crear el carrito.')
+      }
+
+      // 2. Añadir el item al carrito
+      await addCartItem(userCart.id, producto.id, quantity)
+
+      // 3. Actualizar el contador del menú
+      await updateCartCount()
+
+    } catch (err) {
+      console.error('❌ Error añadiendo al carrito:', err)
+      setError(err.message || 'No se pudo añadir el producto al carrito.')
+    } finally {
+      setAddingToCart(false)
+    }
+  }
 
   if (loading) return <main className="container">Cargando...</main>
   if (error) return <main className="container">{error}</main>
@@ -63,8 +120,8 @@ export default function ProductoDetalle() {
             <div className="detalle-galeria">
               <div className="card" style={{ overflow: 'hidden' }}>
                 <img 
-                  src={producto.images?.[0] || producto.img || 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'} 
-                  alt={producto.name || producto.title} 
+                  src={selectedImageUrl || '/img/placeholder-product.jpg'} 
+                  alt={producto.name} 
                   className="detalle-img-principal img-producto"
                   style={{ width: '100%', height: '400px', objectFit: 'cover' }}
                 />
@@ -76,9 +133,9 @@ export default function ProductoDetalle() {
                 marginTop: '1rem',
                 overflowX: 'auto'
               }}>
-                {(producto.images || [producto.img]).slice(0,4).map((src, i) => (
+                {(producto.images || []).slice(0,4).map((imageObj, i) => (
                   <img 
-                    src={src} 
+                    src={imageObj.url} 
                     alt={`Miniatura ${i+1}`} 
                     key={i} 
                     className="thumb img-producto"
@@ -88,11 +145,12 @@ export default function ProductoDetalle() {
                       objectFit: 'cover',
                       borderRadius: 'var(--border-radius-md)',
                       cursor: 'pointer',
-                      border: '2px solid var(--gray-200)',
+                      // Resaltar el borde si la imagen está seleccionada
+                      border: selectedImageUrl === imageObj.url ? '2px solid var(--primary-blue)' : '2px solid var(--gray-200)',
                       transition: 'border-color var(--transition-fast)'
                     }}
-                    onMouseOver={(e) => e.target.style.borderColor = 'var(--primary-blue)'}
-                    onMouseOut={(e) => e.target.style.borderColor = 'var(--gray-200)'}
+                    // Al hacer clic, cambia la imagen principal
+                    onClick={() => setSelectedImageUrl(imageObj.url)}
                   />
                 ))}
               </div>
@@ -106,7 +164,7 @@ export default function ProductoDetalle() {
                     marginBottom: '1rem',
                     fontSize: '2rem'
                   }}>
-                    {producto.name || producto.title}
+                    {producto.name}
                   </h1>
                   
                   <div style={{ marginBottom: '1.5rem' }}>
@@ -117,7 +175,7 @@ export default function ProductoDetalle() {
                       display: 'block',
                       marginBottom: '0.5rem'
                     }}>
-                      {producto.price}
+                      {formatPriceCLP(producto.price)}
                     </span>
                     <small style={{ color: 'var(--gray-600)' }}>
                       Precio incluye IVA
@@ -146,8 +204,9 @@ export default function ProductoDetalle() {
                         type="number" 
                         id="cantidad" 
                         name="cantidad" 
-                        min="1" 
-                        defaultValue={1}
+                        min="1"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                         style={{ 
                           width: '100px', 
                           marginBottom: '1.5rem',
@@ -161,16 +220,11 @@ export default function ProductoDetalle() {
                         type="button" 
                         className="btn-primary" 
                         id="btnAddCart"
+                        onClick={handleAddToCart}
+                        disabled={addingToCart}
                         style={{ flex: '1', minWidth: '200px' }}
                       >
-                        🛒 Añadir al carrito
-                      </button>
-                      <button 
-                        type="button" 
-                        className="btn-secondary"
-                        style={{ flex: '1', minWidth: '200px' }}
-                      >
-                        ❤️ Favoritos
+                        {addingToCart ? 'Añadiendo...' : '🛒 Añadir al carrito'}
                       </button>
                     </div>
                   </form>
@@ -197,17 +251,17 @@ export default function ProductoDetalle() {
               {relacionados.map(r => (
                 <Link to={`/productos/${r.id}`} key={r.id} className="relacionado-card product-card">
                   <img 
-                    src={r.images?.[0] || r.img || 'https://es.wikipedia.org/wiki/No_%28canción_de_Meghan_Trainor%29#/media/Archivo:No_(single)_logo.png'} 
-                    alt={r.name || r.title} 
+                    src={r.images?.[0]?.url || '/img/placeholder-product.jpg'} 
+                    alt={r.name} 
                     className="img-producto"
                     style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                   />
                   <div className="product-info">
                     <h4 className="product-title" style={{ fontSize: '1rem' }}>
-                      {r.name || r.title}
+                      {r.name}
                     </h4>
                     <p className="product-price" style={{ fontSize: '1.1rem' }}>
-                      {r.price}
+                      {formatPriceCLP(r.price)}
                     </p>
                   </div>
                 </Link>

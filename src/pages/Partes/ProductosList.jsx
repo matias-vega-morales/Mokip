@@ -1,6 +1,7 @@
 // src/pages/Partes/ProductosList.jsx
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { formatPriceCLP } from '../format.js'
 
 export const ProductosList = ({ 
   products, 
@@ -28,17 +29,6 @@ export const ProductosList = ({
   // Función para obtener el nombre
   const getName = (product) => {
     return product.name || product.title || 'Producto sin nombre'
-  }
-
-  // Función para formatear precio
-  const formatPrice = (price) => {
-    if (typeof price === 'number') {
-      return `$${price.toFixed(2)}`
-    }
-    if (typeof price === 'string') {
-      return price.includes('$') ? price : `$${price}`
-    }
-    return '$0.00'
   }
 
   // Mostrar loading
@@ -110,7 +100,7 @@ export const ProductosList = ({
             />
             <div className="product-info">
               <h3 className="product-title">{getName(product)}</h3>
-              <p className="product-price">{formatPrice(product.price)}</p>
+              <p className="product-price">{formatPriceCLP(product.price)}</p>
               <button className="add-to-cart">Ver Detalles</button>
             </div>
           </Link>

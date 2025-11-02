@@ -1,6 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { CartProvider } from './pages/CartContext.jsx'
 import './assets/styles/main.css'
 import Productos from './pages/Productos.jsx'
 import Home from './pages/Home.jsx'
@@ -23,21 +24,23 @@ function NoMatch() {
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="productos" element={<Productos />} />
-      <Route path="productos/:id" element={<ProductoDetalle />} />
-      <Route path="carrito" element={<Carrito />} />
-      <Route path="login" element={<Login />} />
-      <Route path="registro" element={<Registro />} />
-      <Route path="admin" element={<AdminDashboard />} />
-      <Route path="admin/productos" element={<AdminProductos />} />
-      <Route path="admin/crear-producto" element={<AdminCrearProducto />} />
-      <Route path="admin/usuarios" element={<AdminUsuarios />} />
-      <Route path="blogs" element={<Blogs />} />
-      <Route path="contacto" element={<Contacto />} />
-      <Route path="*" element={<NoMatch />} />
-      <Route path="/admin/editar-producto/:id" element={<AdminEditarProducto />} />
-    </Routes>
+    <CartProvider>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="productos" element={<Productos />} />
+        <Route path="productos/:id" element={<ProductoDetalle />} />
+        <Route path="carrito" element={<Carrito />} />
+        <Route path="login" element={<Login />} />
+        <Route path="registro" element={<Registro />} />
+        <Route path="admin" element={<AdminDashboard />} />
+        <Route path="admin/productos" element={<AdminProductos />} />
+        <Route path="admin/crear-producto" element={<AdminCrearProducto />} />
+        <Route path="admin/usuarios" element={<AdminUsuarios />} />
+        <Route path="blogs" element={<Blogs />} />
+        <Route path="contacto" element={<Contacto />} />
+        <Route path="*" element={<NoMatch />} />
+        <Route path="/admin/editar-producto/:id" element={<AdminEditarProducto />} />
+      </Routes>
+    </CartProvider>
   </BrowserRouter>
 )

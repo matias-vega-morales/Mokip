@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useCart } from '../CartContext.jsx'
 
 export default function Menu() {
     const [isMenuOpen, setIsMenuOpen] = useState(false)
     const [user, setUser] = useState(null)
     const navigate = useNavigate()
+    const { cartItemCount, updateCartCount } = useCart()
 
     // Verificar si hay usuario logueado
     useEffect(() => {
         const authUser = localStorage.getItem('auth_user')
         if (authUser) {
             setUser(JSON.parse(authUser))
+            // Cargar el conteo inicial del carrito cuando el usuario está disponible
+            updateCartCount();
         }
-    }, [])
+    }, [updateCartCount])
 
     // Cerrar sesión
     const handleLogout = () => {
@@ -20,6 +24,7 @@ export default function Menu() {
         localStorage.removeItem('auth_token')
         setUser(null)
         setIsMenuOpen(false)
+        updateCartCount(); // Resetea el contador a 0
         navigate('/')
     }
 
@@ -59,7 +64,9 @@ export default function Menu() {
                     <div className="nav-actions">
                         <Link to="/carrito" className="cart-link" title="Ver carrito" aria-label="Ver carrito">
                             <span className="cart-icon" aria-hidden="true">🛍️</span>
-                            <span className="cart-count" aria-live="polite">0</span>
+                            {cartItemCount > 0 && (
+                                <span className="cart-count" aria-live="polite">{cartItemCount}</span>
+                            )}
                         </Link>
 
                         <div className="user-menu-container" style={{ position: 'relative' }}>

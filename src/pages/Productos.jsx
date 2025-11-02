@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import Menu from './Partes/Menu'
 import { Link } from 'react-router-dom'
 import { fetchProducts } from '../Api/xano'
+import { formatPriceCLP } from './format.js'
 
 // Componente de carga mejorado
 const LoadingSpinner = () => (
@@ -109,17 +110,6 @@ const ProductCard = React.memo(({ product }) => {
     product.name || product.title || 'Producto sin nombre'
   , [product])
 
-  const formattedPrice = useMemo(() => {
-    const price = product.price
-    if (typeof price === 'number') {
-      return `$${price.toFixed(2)}`
-    }
-    if (typeof price === 'string') {
-      return price.includes('$') ? price : `$${price}`
-    }
-    return '$0.00'
-  }, [product.price])
-
   const productCategory = useMemo(() => 
     product.category || product.categoria || 'otros'
   , [product])
@@ -185,7 +175,7 @@ const ProductCard = React.memo(({ product }) => {
         <h3 className="product-title" title={productName}>
           {productName}
         </h3>
-        <p className="product-price">{formattedPrice}</p>
+        <p className="product-price">{formatPriceCLP(product.price)}</p>
         <button className="add-to-cart">
           <i className="fas fa-eye me-2"></i>
           Ver Detalles
