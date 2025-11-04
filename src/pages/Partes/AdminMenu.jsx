@@ -103,12 +103,12 @@ export default function AdminMenu() {
           </Link>
          
           <Link 
-            to="" 
-            className={isActiveLink('')}
+            to="/admin/ventas" 
+            className={isActiveLink('/admin/ventas') ? 'active' : ''}
             onClick={handleNavClick}
           >
-            <span className="icon">⚙️</span> 
-            <span className="nav-text">Configuración</span>
+            <span className="icon">💰</span> 
+            <span className="nav-text">Ventas</span>
           </Link>
           
           <div className="nav-divider"></div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import Menu from './Partes/Menu'
-import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart, fetchProducts } from '../Api/xano'
+import { fetchCartByUser, fetchCartItems, updateCartItem, deleteCartItem, createCart, fetchProducts, createOrder, addOrderItem } from '../Api/xano'
 import { Link, useNavigate } from 'react-router-dom'
 import { Footer } from './Partes/Footer'
 import { formatPriceCLP } from './format.js'
@@ -11,6 +11,7 @@ export default function Carrito() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [checkoutMessage, setCheckoutMessage] = useState('') // Estado para el mensaje de éxito
   const [updatingItems, setUpdatingItems] = useState(new Set()) // Para evitar múltiples updates
   const navigate = useNavigate()
   const { updateCartCount } = useCart() // Obtenemos la función para actualizar el contador global
@@ -152,16 +153,52 @@ export default function Carrito() {
   }
 
   // Proceder al pago
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (items.length === 0) {
       setError('El carrito está vacío')
       return
     }
-    
-    // Aquí puedes redirigir a la página de checkout
-    console.log('Procediendo al pago con items:', items)
-    // navigate('/checkout')
-    alert('Funcionalidad de pago en desarrollo')
+
+    setLoading(true)
+    setError(null)
+    setCheckoutMessage('')
+
+    try {
+      // 1. Crear la orden principal
+      const newOrder = await createOrder({
+        user_id: cart.user_id,
+        total_price: total,
+        status: 'pending_approval', // Nuevo estado
+        created_at: new Date().toISOString()
+      });
+
+      if (!newOrder || !newOrder.id) {
+        throw new Error('No se pudo crear la orden.');
+      }
+
+      // 2. Añadir cada item del carrito como un order_item
+      for (const item of items) {
+        await addOrderItem({
+          order_id: newOrder.id,
+          product_id: item.product_id,
+          quantity: item.quantity,
+          price_at_purchase: (item.product_data || {}).price || 0
+        });
+        // Borrar el item del carrito después de añadirlo a la orden
+        await deleteCartItem(item.id);
+      }
+
+      // 3. Actualizar el contador del menú (se irá a 0)
+      await updateCartCount();
+
+      // 4. Redirigir al usuario a la página de "Mis Compras"
+      navigate('/mis-compras');
+    } catch (err) {
+      console.error('Error en el checkout:', err);
+      setError('Hubo un problema al procesar tu orden. Por favor, intenta de nuevo.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Calcular total de forma eficiente
@@ -317,10 +354,22 @@ export default function Carrito() {
                       <button 
                         className="btn btn-primary" 
                         onClick={handleCheckout}
+                        disabled={loading}
                       >
-                        Proceder al Pago
+                        {loading ? 'Procesando...' : 'Proceder al Pago'}
                       </button>
                     </div>
+
+                    {checkoutMessage && (
+                      <div 
+                        className="success-banner" 
+                        style={{ marginTop: '1rem', textAlign: 'center' }}
+                      >
+                        <p style={{ margin: 0 }}>
+                          ✅ {checkoutMessage}
+                        </p>
+                      </div>
+                    )}
                     
                     <div className="security-notice">
                       🔒 Compra 100% segura y protegida

@@ -52,10 +52,6 @@ export default function AdminUsuarios() {
   }
 
   async function handleDeleteUser(usuario) {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar al usuario ${usuario.name} ${usuario.last_name}? Esta acción no se puede deshacer.`)) {
-      return
-    }
-    
     try {
       await deleteUser(usuario.id)
       

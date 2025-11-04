@@ -154,6 +154,27 @@ export default function Menu() {
                                                 Hola, <strong>{user.name || user.email.split('@')[0]}</strong>
                                             </div>
                                             
+                                            <Link 
+                                                to="/mis-compras" 
+                                                className="dropdown-item"
+                                                onClick={() => setIsMenuOpen(false)}
+                                                style={{
+                                                    display: 'block',
+                                                    padding: '0.75rem 1rem',
+                                                    color: 'var(--gray-700)',
+                                                    textDecoration: 'none',
+                                                    transition: 'background-color 0.2s',
+                                                    border: 'none',
+                                                    background: 'none',
+                                                    width: '100%',
+                                                    textAlign: 'left',
+                                                    cursor: 'pointer'
+                                                }}
+                                                onMouseOver={(e) => e.target.style.backgroundColor = 'var(--gray-100)'}
+                                                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                                            >
+                                                🛍️ Mis Compras
+                                            </Link>
                                             {isAdmin && (
                                                 <Link 
                                                     to="/admin" 

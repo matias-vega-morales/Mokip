@@ -469,6 +469,75 @@ export async function createOrder(orderData) {
   return await response.json();
 }
 
+export async function fetchOrderItems() {
+  const response = await fetch(`${BASE_URL}/order_item`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
+
+export async function addOrderItem(orderItemData) {
+  try {
+    console.log('📦 Creando item de orden:', orderItemData);
+    const response = await fetch(`${BASE_URL}/order_item`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(orderItemData)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+
+    const newOrderItem = await response.json();
+    console.log('✅ Item de orden creado:', newOrderItem);
+    return newOrderItem;
+
+  } catch (err) {
+    console.error('❌ Error creando item de orden:', err);
+    throw err;
+  }
+}
+
+export async function updateOrder(orderId, updates) {
+  try {
+    const response = await fetch(`${BASE_URL}/order/${orderId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updates)
+    });
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}: ${await response.text()}`);
+    }
+    return await response.json();
+  } catch (err) {
+    console.error(`Error actualizando orden ${orderId}:`, err);
+    throw err;
+  }
+}
+
+export async function deleteOrder(orderId) {
+  try {
+    const response = await fetch(`${BASE_URL}/order/${orderId}`, {
+      method: 'DELETE'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+
+    return true; // Indica que la eliminación fue exitosa
+  } catch (err) {
+    console.error(`Error eliminando orden ${orderId}:`, err);
+    throw err;
+  }
+}
+
 // 🔹 ENVÍOS
 export async function fetchShipping() {
   const response = await fetch(`${BASE_URL}/shipping`);

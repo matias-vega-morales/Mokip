@@ -27,10 +27,6 @@ export default function AdminProductos() {
   }
 
   async function handleDeleteProduct(producto) {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar el producto "${producto.name}"? Esta acción no se puede deshacer.`)) {
-      return
-    }
-    
     try {
       await deleteProduct(producto.id)
       
