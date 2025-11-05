@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import AdminMenu from './Partes/AdminMenu'
 import { fetchUsers, updateUser, deleteUser } from '../Api/xano'
 
@@ -6,6 +7,7 @@ export default function AdminUsuarios() {
   const [usuarios, setUsuarios] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     loadUsuarios()
@@ -63,6 +65,16 @@ export default function AdminUsuarios() {
     }
   }
 
+  // Filtrar usuarios basado en el término de búsqueda
+  const filteredUsuarios = useMemo(() => {
+    if (!searchTerm) return usuarios;
+    return usuarios.filter(usuario => {
+      const fullName = `${usuario.name || ''} ${usuario.last_name || ''}`.toLowerCase();
+      const email = (usuario.email || '').toLowerCase();
+      return fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
+    });
+  }, [usuarios, searchTerm]);
+
   if (loading) return (
     <>
       <AdminMenu />
@@ -103,10 +115,21 @@ export default function AdminUsuarios() {
         <main className="admin-content">
           <div className="usuarios-table card">
             <div className="card-header">
-              <h3 style={{ margin: 0 }}>Lista de Usuarios</h3>
-              <small style={{ color: 'var(--gray-600)' }}>
-                {usuarios.length} usuarios registrados
-              </small>
+              <div>
+                <h3 style={{ margin: 0 }}>Lista de Usuarios</h3>
+                <small style={{ color: 'var(--gray-600)' }}>
+                  {filteredUsuarios.length} de {usuarios.length} usuarios registrados
+                </small>
+              </div>
+              <div className="search-bar-admin">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre o email..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
             </div>
             
             <div style={{ overflowX: 'auto' }}>
@@ -125,7 +148,7 @@ export default function AdminUsuarios() {
                   </tr>
                 </thead>
                 <tbody>
-                  {usuarios.map(usuario => (
+                  {filteredUsuarios.map(usuario => (
                     <tr key={usuario.id}>
                       <td>
                         <div style={{ 
@@ -193,6 +216,17 @@ export default function AdminUsuarios() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <Link to={`/admin/editar-usuario/${usuario.id}`}>
+                            <button
+                              className="btn-secondary"
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.8rem'
+                              }}
+                            >
+                              Editar
+                            </button>
+                          </Link>
                           <button 
                             className={usuario.status === 'blocked' ? "btn-secondary" : "btn-warning"}
                             onClick={() => handleToggleBlock(usuario)}
@@ -226,6 +260,9 @@ export default function AdminUsuarios() {
                   ))}
                 </tbody>
               </table>
+              {filteredUsuarios.length === 0 && !loading && (
+                <p style={{ textAlign: 'center', padding: '2rem' }}>No se encontraron usuarios que coincidan con la búsqueda.</p>
+              )}
             </div>
           </div>
         </main>

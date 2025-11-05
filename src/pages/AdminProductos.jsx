@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import AdminMenu from './Partes/AdminMenu'
 import { Link } from 'react-router-dom'
 import { fetchProducts, deleteProduct } from '../Api/xano'
@@ -8,6 +8,7 @@ export default function AdminProductos() {
   const [productos, setProductos] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     loadProductos()
@@ -37,6 +38,14 @@ export default function AdminProductos() {
       alert(`Error al eliminar el producto: ${err.message}`)
     }
   }
+
+  // Filtrar productos basado en el término de búsqueda
+  const filteredProductos = useMemo(() => {
+    if (!searchTerm) return productos;
+    return productos.filter(producto =>
+      producto.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [productos, searchTerm]);
 
   if (loading) return (
     <>
@@ -81,10 +90,21 @@ export default function AdminProductos() {
         <main className="admin-content">
           <div className="productos-table card">
             <div className="card-header">
-              <h3 style={{ margin: 0 }}>Lista de Productos</h3>
-              <small style={{ color: 'var(--gray-600)' }}>
-                {productos.length} productos encontrados
-              </small>
+              <div>
+                <h3 style={{ margin: 0 }}>Lista de Productos</h3>
+                <small style={{ color: 'var(--gray-600)' }}>
+                  {filteredProductos.length} de {productos.length} productos encontrados
+                </small>
+              </div>
+              <div className="search-bar-admin">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
             </div>
             
             <div style={{ overflowX: 'auto' }}>
@@ -102,7 +122,7 @@ export default function AdminProductos() {
                   </tr>
                 </thead>
                 <tbody>
-                  {productos.map(producto => (
+                  {filteredProductos.map(producto => (
                     <tr key={producto.id}>
                       <td>
                         <img 
@@ -205,6 +225,9 @@ export default function AdminProductos() {
                   ))}
                 </tbody>
               </table>
+              {filteredProductos.length === 0 && !loading && (
+                <p style={{ textAlign: 'center', padding: '2rem' }}>No se encontraron productos que coincidan con la búsqueda.</p>
+              )}
             </div>
           </div>
         </main>

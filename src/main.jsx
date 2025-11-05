@@ -17,6 +17,7 @@ import AdminProductos from './pages/AdminProductos.jsx'
 import AdminCrearProducto from './pages/AdminCrearProducto.jsx'
 import AdminVentas from './pages/AdminVentas.jsx'
 import AdminUsuarios from './pages/AdminUsuarios.jsx'
+import EditUsuario from './pages/Partes/EditUsuario.jsx'
 import AdminEditarProducto from './pages/AdminEditarProducto.jsx'
 
 function NoMatch() {
@@ -33,6 +34,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="productos/:id" element={<ProductoDetalle />} />
         <Route path="carrito" element={<Carrito />} />
         <Route path="login" element={<Login />} />
+        <Route path="perfil/:id" element={<EditUsuario />} />
         <Route path="mis-compras" element={<MisCompras />} />
         <Route path="registro" element={<Registro />} />
         <Route path="admin" element={<AdminDashboard />} />
@@ -40,6 +42,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="admin/crear-producto" element={<AdminCrearProducto />} />
         <Route path="admin/ventas" element={<AdminVentas />} />
         <Route path="admin/usuarios" element={<AdminUsuarios />} />
+        <Route path="admin/editar-usuario/:id" element={<EditUsuario />} />
         <Route path="blogs" element={<Blogs />} />
         <Route path="contacto" element={<Contacto />} />
         <Route path="*" element={<NoMatch />} />

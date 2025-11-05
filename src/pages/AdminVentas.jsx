@@ -34,7 +34,7 @@ export default function AdminVentas() {
         });
 
         setOrders(enrichedOrders)
-        setUsers(new Map(usersData.map(u => [u.id, u.name || u.email])))
+        setUsers(new Map(usersData.map(u => [u.id, u]))) // Guardar el objeto de usuario completo
 
       } catch (err) {
         console.error('Error cargando datos de ventas:', err)
@@ -119,47 +119,52 @@ export default function AdminVentas() {
                     <th>ID Orden</th>
                     <th>Cliente</th>
                     <th>Fecha</th>
+                    <th>Dirección</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pendingOrders.map(order => (
-                    <tr key={order.id}>
-                      <td><small>{order.id}</small></td>
-                      <td>{users.get(order.user_id) || 'Usuario desconocido'}</td>
-                      <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                      <td>{formatPriceCLP(order.total_price || 0)}</td>
-                      <td>
-                        <span className="status-pending">
-                          {order.status === 'pending_approval' ? 'Pendiente' : order.status}
-                        </span>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button 
-                            onClick={() => handleApproveOrder(order.id)} 
-                            className="btn-secondary btn-sm"
-                            title="Aprobar Venta"
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', '--bs-btn-bg': 'var(--success-light)', '--bs-btn-color': 'var(--success-dark)', '--bs-btn-border-color': 'var(--success)' }}
-                          >
-                            <span style={{ fontWeight: 'bold' }}>✓</span>
-                            <span>Aprobar</span>
-                          </button>
-                          <button 
-                            onClick={() => handleRejectOrder(order.id)} 
-                            className="btn-secondary btn-sm"
-                            title="Rechazar Venta"
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', '--bs-btn-bg': 'var(--error-light)', '--bs-btn-color': 'var(--error-dark)', '--bs-btn-border-color': 'var(--error)' }}
-                          >
-                            <span style={{ fontWeight: 'bold' }}>×</span>
-                            <span>Rechazar</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {pendingOrders.map(order => {
+                    const user = users.get(order.user_id);
+                    return (
+                      <tr key={order.id}>
+                        <td><small>{order.id}</small></td>
+                        <td>{user?.name || user?.email || 'Usuario desconocido'}</td>
+                        <td>{new Date(order.created_at).toLocaleDateString()}</td>
+                        <td style={{ maxWidth: '200px', whiteSpace: 'normal' }}>{user?.shipping_address || '-'}</td>
+                        <td>{formatPriceCLP(order.total_price || 0)}</td>
+                        <td>
+                          <span className="status-pending">
+                            {order.status === 'pending_approval' ? 'Pendiente' : order.status}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button 
+                              onClick={() => handleApproveOrder(order.id)} 
+                              className="btn-secondary btn-sm"
+                              title="Aprobar Venta"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', '--bs-btn-bg': 'var(--success-light)', '--bs-btn-color': 'var(--success-dark)', '--bs-btn-border-color': 'var(--success)' }}
+                            >
+                              <span style={{ fontWeight: 'bold' }}>✓</span>
+                              <span>Aprobar</span>
+                            </button>
+                            <button 
+                              onClick={() => handleRejectOrder(order.id)} 
+                              className="btn-secondary btn-sm"
+                              title="Rechazar Venta"
+                              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', '--bs-btn-bg': 'var(--error-light)', '--bs-btn-color': 'var(--error-dark)', '--bs-btn-border-color': 'var(--error)' }}
+                            >
+                              <span style={{ fontWeight: 'bold' }}>×</span>
+                              <span>Rechazar</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
               {pendingOrders.length === 0 && <p style={{textAlign: 'center', padding: '2rem'}}>No hay ventas pendientes de aprobación.</p>}

@@ -351,6 +351,12 @@ export async function fetchUsers() {
   return await response.json();
 }
 
+export async function fetchUserById(userId) {
+  const response = await fetch(`${BASE_URL}/user/${userId}`);
+  if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
+  return await response.json();
+}
+
 export async function updateUser(userId, updates) {
   try {
     const token = getToken();
