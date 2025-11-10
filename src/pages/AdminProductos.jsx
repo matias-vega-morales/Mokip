@@ -197,15 +197,15 @@ export default function AdminProductos() {
                       <td>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <Link to={`/admin/editar-producto/${producto.id}`}>
-                          <button 
-                            className="btn-secondary" 
-                            style={{ 
-                              padding: '0.25rem 0.5rem',
-                              fontSize: '0.8rem'
-                            }}
-                          >
-                            Editar
-                          </button>
+                            <button
+                              className="btn-secondary"
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                fontSize: '0.8rem'
+                              }}
+                            >
+                              Editar
+                            </button>
                           </Link>
                           <button 
                             className="btn-link" 

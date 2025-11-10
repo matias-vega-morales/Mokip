@@ -63,8 +63,9 @@ export default function MisCompras() {
   const getStatusInfo = (status) => {
     switch (status) {
       case 'pending_approval': return { text: 'Pendiente', className: 'status-pending' };
-      case 'approved': return { text: 'Aprobado', className: 'status-approved' };
+      case 'shipping': return { text: 'Enviándose', className: 'status-shipping' };
       case 'rejected': return { text: 'Rechazado', className: 'status-rejected' };
+      case 'delivered': return { text: 'Entregado', className: 'status-delivered' };
       default: return { text: status, className: '' };
     }
   };
@@ -100,11 +101,18 @@ export default function MisCompras() {
   return (
     <>
       <Menu />
-      <main className="container" style={{ padding: '2rem 0' }}>
-        <div className="page-header">
-          <h1>Tus Pedidos</h1>
-        </div>
 
+      {/* Hero Section para la página */}
+      <section className="page-hero">
+        <div className="container">
+          <div className="hero-content">
+            <h1 className="hero-title">Tus Pedidos</h1>
+            <p className="hero-subtitle">Aquí puedes ver el historial y estado de tus compras.</p>
+          </div>
+        </div>
+      </section>
+
+      <main className="container" style={{ padding: '2rem 0 5rem 0' }}>
         {error && (
           <div className="error-banner">
             <p>{error}</p>
@@ -121,56 +129,77 @@ export default function MisCompras() {
           </div>
         )}
 
-        <div className="orders-list" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          {orders.map(order => {
-            const statusInfo = getStatusInfo(order.status);
-            return (
-              <div className="card" key={order.id}>
-                <div className="card-header">
-                  <div className="order-header-info">
-                    <strong>Pedido del {new Date(order.created_at).toLocaleDateString('es-ES')}</strong>
-                    <span className={`status-badge ${statusInfo.className}`}>{statusInfo.text}</span>
-                  </div>
-                  {order.status === 'rejected' && (
-                    <button
-                      onClick={() => handleDeleteRejectedOrder(order.id)}
-                      title="Eliminar orden del historial"
-                      className="btn-remove-order"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-                <div className="card-body">
-                  <div className="order-items-list">
-                    {order.items?.map(item => (
-                      <div key={item.id} className="order-item">
-                        <img 
-                          src={item.product_data?.images?.[0]?.url || '/img/placeholder-product.jpg'} 
-                          alt={item.product_data?.name} 
-                          className="order-item-image"
-                        />
-                        <div className="order-item-details">
-                          <p className="item-name">{item.product_data?.name}</p>
-                          <p className="item-meta">{item.quantity} x {formatPriceCLP(item.price_at_purchase)}</p>
-                        </div>
-                        <div className="order-item-subtotal">
-                          {formatPriceCLP(item.price_at_purchase * item.quantity)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="order-total-summary">
-                    <div className="summary-row">
-                      <span>Total del Pedido</span>
-                      <span className="total-price">{formatPriceCLP(order.total_price)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {!loading && orders.length > 0 && (
+          <div className="card">
+            <div style={{ overflowX: 'auto' }}>
+              <table className="orders-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map(order => {
+                    const statusInfo = getStatusInfo(order.status);
+                    const isExpanded = expandedOrderId === order.id;
+                    return (
+                      <React.Fragment key={order.id}>
+                        <tr>
+                          <td>{new Date(order.created_at).toLocaleDateString('es-ES')}</td>
+                          <td>{formatPriceCLP(order.total_price)}</td>
+                          <td>
+                            <span className={`status-badge ${statusInfo.className}`}>
+                              {order.status === 'shipping' && <span className="shipping-icon" style={{ marginRight: '0.5rem' }}>🚚</span>}
+                              {statusInfo.text}
+                            </span>
+                            {order.status === 'rejected' && (
+                              <button
+                                onClick={() => handleDeleteRejectedOrder(order.id)}
+                                title="Eliminar del historial"
+                                className="btn-icon-remove"
+                                style={{ background: 'transparent', border: '1px solid var(--gray-300)', borderRadius: '50%', width: '24px', height: '24px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1.2rem', lineHeight: '1', marginLeft: '0.75rem', transition: 'all 0.2s ease' }}
+                                onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'var(--error-light)'; e.currentTarget.style.color = 'var(--error)'; e.currentTarget.style.borderColor = 'var(--error)'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--gray-500)'; e.currentTarget.style.borderColor = 'var(--gray-300)'; }}
+                              >
+                                ×
+                              </button>
+                            )}
+                          </td>
+                          <td>
+                            <button onClick={() => handleToggleDetails(order.id)} className="btn-secondary btn-sm">
+                              {isExpanded ? 'Ocultar' : 'Ver Detalles'}
+                            </button>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="order-details-row">
+                            <td colSpan="4">
+                              <div className="order-items-list">
+                                {order.items?.map(item => (
+                                  <div key={item.id} className="order-item">
+                                    <img src={item.product_data?.images?.[0]?.url || '/img/placeholder-product.jpg'} alt={item.product_data?.name} className="order-item-image" />
+                                    <div className="order-item-details">
+                                      <p className="item-name">{item.product_data?.name}</p>
+                                      <p className="item-meta">{item.quantity} x {formatPriceCLP(item.price_at_purchase)}</p>
+                                    </div>
+                                    <div className="order-item-subtotal">{formatPriceCLP(item.price_at_purchase * item.quantity)}</div>
+                                  </div>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </>

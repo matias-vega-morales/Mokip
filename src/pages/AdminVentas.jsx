@@ -50,6 +50,10 @@ export default function AdminVentas() {
     orders.filter(order => order.status === 'pending_approval'), 
   [orders])
 
+  const shippingOrders = useMemo(() =>
+    orders.filter(order => order.status === 'shipping'),
+  [orders])
+
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
       await updateOrder(orderId, { status: newStatus });
@@ -63,11 +67,15 @@ export default function AdminVentas() {
   }
 
   const handleApproveOrder = (orderId) => {
-    handleUpdateOrderStatus(orderId, 'approved');
+    // Al aprobar, el estado pasa a "shipping" (enviándose)
+    handleUpdateOrderStatus(orderId, 'shipping');
   }
 
   const handleRejectOrder = (orderId) => {
     handleUpdateOrderStatus(orderId, 'rejected');
+  }
+  const handleDeliverOrder = (orderId) => {
+    handleUpdateOrderStatus(orderId, 'delivered');
   }
 
   if (loading) return (
@@ -137,7 +145,7 @@ export default function AdminVentas() {
                         <td>{formatPriceCLP(order.total_price || 0)}</td>
                         <td>
                           <span className="status-pending">
-                            {order.status === 'pending_approval' ? 'Pendiente' : order.status}
+                            Pendiente
                           </span>
                         </td>
                         <td>
@@ -168,6 +176,64 @@ export default function AdminVentas() {
                 </tbody>
               </table>
               {pendingOrders.length === 0 && <p style={{textAlign: 'center', padding: '2rem'}}>No hay ventas pendientes de aprobación.</p>}
+            </div>
+          </div>
+
+          {/* SEGUNDA LISTA: VENTAS APROBADAS (ENVIÁNDOSE) */}
+          <div className="productos-table card" style={{ marginTop: '2rem' }}>
+            <div className="card-header">
+              <h3 style={{ margin: 0 }}>Ventas Aprobadas (Enviándose)</h3>
+              <small style={{ color: 'var(--gray-600)' }}>
+                {shippingOrders.length} ventas en proceso de envío
+              </small>
+            </div>
+            
+            <div style={{ overflowX: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID Orden</th>
+                    <th>Cliente</th>
+                    <th>Dirección</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shippingOrders.map(order => {
+                    const user = users.get(order.user_id);
+                    return (
+                      <tr key={order.id}>
+                        <td><small>{order.id}</small></td>
+                        <td>{user?.name || user?.email || 'Usuario desconocido'}</td>
+                        <td style={{ maxWidth: '200px', whiteSpace: 'normal' }}>{user?.shipping_address || '-'}</td>
+                        <td>{formatPriceCLP(order.total_price || 0)}</td>
+                        <td>
+                          <span className="status-shipping">
+                            Enviándose
+                          </span>
+                        </td>
+                        <td>
+                          <button 
+                            onClick={() => handleDeliverOrder(order.id)} 
+                            className="btn-secondary btn-sm"
+                            title="Marcar como Entregado"
+                            style={{ 
+                              display: 'flex', alignItems: 'center', gap: '0.25rem', 
+                              '--bs-btn-bg': 'var(--primary-blue-light)', '--bs-btn-color': 'var(--primary-blue)', '--bs-btn-border-color': 'var(--primary-blue)' 
+                            }}
+                          >
+                            <span style={{ fontWeight: 'bold' }}>✓</span>
+                            <span>Entregado</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {shippingOrders.length === 0 && <p style={{textAlign: 'center', padding: '2rem'}}>No hay ventas en proceso de envío.</p>}
             </div>
           </div>
         </main>
