@@ -78,15 +78,17 @@ export async function login({ email, password }) {
   }
 }
 
-export async function signup({ name, email, password }) {
+export async function signup({ name, last_name, email, password, status }) {
   try {
     const URL_COMPLETA = 'https://x8ki-letl-twmt.n7.xano.io/api:HJwsqpRg/auth/signup';
     console.log('📝 Intentando registro en Xano...');
     
     const requestBody = {
       name: name,
+      last_name: last_name,
       email: email,
-      password: password
+      password: password,
+      status: status // Añadimos el estado al cuerpo de la petición
     };
     
     console.log('📦 Signup body para Xano:', requestBody);
@@ -116,10 +118,7 @@ export async function signup({ name, email, password }) {
 
     setToken(authToken);
     
-    return { 
-      token: authToken, 
-      user: data.user || { name, email } 
-    };
+    return data; // Devolver el objeto completo de Xano
   } catch (err) {
     console.error('❌ Error en signup:', err);
     throw err;
@@ -414,6 +413,30 @@ export async function updateUser(userId, updates) {
     
   } catch (err) {
     console.error('❌ Error actualizando usuario:', err);
+    throw err;
+  }
+}
+
+export async function createUser(userData) {
+  try {
+    const token = getToken(); // Un admin debe estar autenticado para crear usuarios
+    const response = await fetch(`${BASE_URL}/user`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(userData)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (err) {
+    console.error('Error creando usuario:', err);
     throw err;
   }
 }

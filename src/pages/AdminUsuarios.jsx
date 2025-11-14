@@ -110,6 +110,9 @@ export default function AdminUsuarios() {
               Administra los usuarios registrados en la plataforma
             </p>
           </div>
+          <Link to="/admin/crear-usuario" className="btn-primary">
+            + Crear Usuario
+          </Link>
         </div>
         
         <main className="admin-content">

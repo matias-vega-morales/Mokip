@@ -116,7 +116,8 @@ export default function Login() {
         display: 'flex', 
         alignItems: 'center', 
         background: 'linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light))',
-        padding: '2rem 0'
+        padding: '2rem 0',
+        paddingTop: '100px'
       }}>
         <div className="container" style={{ maxWidth: '400px' }}>
           <div className="card fade-in">
@@ -226,5 +227,3 @@ export default function Login() {
     </>
   )
 }
-
-

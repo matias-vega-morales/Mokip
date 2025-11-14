@@ -11,7 +11,7 @@ import ProductoDetalle from './pages/ProductoDetalle.jsx'
 import Carrito from './pages/Carrito.jsx'
 import Login from './pages/Login.jsx'
 import MisCompras from './pages/MisCompras.jsx'
-import Registro from './pages/Registro.jsx'
+import Registro from './pages/Partes/Registro.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import AdminProductos from './pages/AdminProductos.jsx'
 import AdminCrearProducto from './pages/AdminCrearProducto.jsx'
@@ -37,6 +37,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="perfil/:id" element={<EditUsuario />} />
         <Route path="mis-compras" element={<MisCompras />} />
         <Route path="registro" element={<Registro />} />
+        <Route path="admin/crear-usuario" element={<Registro />} />
         <Route path="admin" element={<AdminDashboard />} />
         <Route path="admin/productos" element={<AdminProductos />} />
         <Route path="admin/crear-producto" element={<AdminCrearProducto />} />

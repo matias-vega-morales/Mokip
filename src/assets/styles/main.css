@@ -1027,18 +1027,6 @@ tr:hover {
   color: var(--gray-500);
 }
 
-.read-more {
-  color: var(--primary-blue);
-  font-weight: 600;
-  text-decoration: none;
-  transition: all var(--transition-fast);
-}
-
-.read-more:hover {
-  color: var(--primary-blue-dark);
-  transform: translateX(4px);
-}
-
 /* Newsletter Section */
 .newsletter-section {
   margin: var(--spacing-3xl) 0;

@@ -108,7 +108,7 @@ export default function ProductoDetalle() {
   return (
     <>
       <Menu />
-      <div className="main-content">
+      <div className="main-content" style={{ paddingTop: '100px' }}>
         <div className="container">
           <div className="detalle-container" style={{ 
             display: 'grid', 
