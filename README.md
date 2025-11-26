@@ -223,7 +223,9 @@ export async function deleteProduct(productId) {
 
 ### Desafíos Encontrados
 
-El principal desafío fue la gestión de datos binarios (imágenes) junto con datos JSON. La solución fue utilizar `FormData` para las peticiones `POST` (creación de productos), ya que el `Content-Type: multipart/form-data` permite enviar tanto campos de texto como archivos. Para las actualizaciones (`PATCH`), se optó por un enfoque de dos pasos: primero subir la imagen a un endpoint dedicado y luego actualizar el producto con la URL de la nueva imagen, para mantener la simplicidad de las peticiones `PATCH` con `Content-Type: application/json`.
+*   **Gestión de Imágenes:** El primer desafío fue la gestión de datos binarios (imágenes) junto con datos JSON. La solución fue utilizar `FormData` para las peticiones `POST` (creación de productos), ya que el `Content-Type: multipart/form-data` permite enviar tanto campos de texto como archivos. Para las actualizaciones (`PATCH`), se optó por un enfoque de dos pasos: primero subir la imagen a un endpoint dedicado y luego actualizar el producto con la URL de la nueva imagen.
+
+*   **Configuración de CORS para Despliegue:** Un desafío importante surgió al desplegar la aplicación en Vercel. Mientras que en el entorno local (`localhost`) todo funcionaba correctamente, la versión desplegada en `https://mokip.vercel.app` no podía comunicarse con la API de Xano debido a errores de **CORS (Cross-Origin Resource Sharing)**. Esto ocurre porque, por seguridad, los navegadores bloquean las peticiones a un dominio diferente (el de Xano) a menos que este lo permita explícitamente. La solución fue acceder a la configuración de la API en Xano y añadir el dominio `https://mokip.vercel.app` a la lista de orígenes permitidos.
 
 ---
 
