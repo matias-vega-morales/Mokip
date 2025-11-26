@@ -254,8 +254,6 @@ El código completo de la capa de acceso a datos se encuentra en el archivo:
 
 ### Diagramas y Modelos
 
-*(Aquí podrías incluir un diagrama de flujo de la aplicación, un diagrama de la arquitectura o un modelo Entidad-Relación conceptual si lo tienes).*
-
 **Ejemplo de Diagrama de Flujo de Compra:**
 
 ```mermaid
